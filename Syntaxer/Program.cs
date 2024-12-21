@@ -26,5 +26,6 @@ public class Program
         {
             Console.WriteLine($"Length: {pair.x}, Line: {pair.y}");
         }
+        Console.WriteLine(data.Replace("\n", ""));
     }
 }
