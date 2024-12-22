@@ -2,10 +2,14 @@ namespace Syntax;
 
 public class Instruction
 {
-    private string body;
+    private string originalBody;
 
     public Instruction(string body)
     {
-        this.body = body;
+        originalBody = body;
+    }
+    public override string ToString()
+    {
+        return originalBody.Replace('\n', '\0');
     }
 }
