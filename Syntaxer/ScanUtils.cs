@@ -32,7 +32,7 @@ public static class ScanUtils
     /// <param name="position">Position of cursor, where opening symbol was found.</param>
     /// <param name="readOutput">String to where string (char) content should be appended.</param>
     /// <param name="type">Is it string or char.</param>
-    /// <returns>Position of string (char) termintor.</returns>
+    /// <returns>Position of string (char) terminator.</returns>
     public static int SkipString(string body, int position, string readOutput, StringType type)
     {
         char terminationSymbol;
@@ -56,6 +56,31 @@ public static class ScanUtils
             if (IsEndOfBody(body, position)) break; // Nothing to scan futher.
             readOutput += body[position];
             if (body[position] == terminationSymbol) if (IsStringTerminator(body, position)) break;
+        }
+        return position;
+    }
+
+    /// <summary>
+    /// Read and write block.
+    /// </summary>
+    /// <param name="body">String on which scan is performed.</param>
+    /// <param name="position">Cursor position where block open bracket is found.</param>
+    /// <param name="readOutput">String to where block contents should be written.</param>
+    /// <returns>Position where block closing bracket was found.</returns>
+    public static int SkipBlock(string body, int position, string readOutput)
+    {
+        readOutput += body[position];
+        int bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
+        while (true)
+        {
+            position++;
+            if (IsEndOfBody(body, position)) break; // Nothing to scan futher.
+            readOutput += body[position];
+
+            if (body[position] == '}') bracketBalance++;
+            else if (body[position] == '{') bracketBalance--;
+
+            if (bracketBalance == 0) break;
         }
         return position;
     }
@@ -90,11 +115,7 @@ public static class ScanUtils
     /// <returns>True, if position is no longer inside of the body.</returns>
     public static bool IsEndOfBody(string body, int position)
     {
-        if (position == body.Length)
-        {
-            return true;
-        }
-        return false;
+        return position == body.Length;
     }
 
     /// <summary>
@@ -105,10 +126,6 @@ public static class ScanUtils
     /// <returns>True, if position leads to the last symbol of the body.</returns>
     public static bool IsLastSymbol(string body, int position)
     {
-        if (position == body.Length - 1)
-        {
-            return true;
-        }
-        return false;
+        return position == body.Length - 1;
     }
 }

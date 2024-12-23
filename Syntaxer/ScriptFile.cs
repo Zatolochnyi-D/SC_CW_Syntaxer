@@ -6,7 +6,6 @@ public class ScriptFile
 {
     private string originalBody;
     private List<string> linesOfFile = [];
-    private List<int> fileSize = []; // Each index represents line, it's value represents length. 
     private List<object> members = [];
 
     public ScriptFile(string body)
@@ -76,30 +75,7 @@ public class ScriptFile
             else if (originalBody[i] == '{')
             {
                 // Start of block found.
-                member += originalBody[i];
-                int bracketBalance = -1;
-                while (true)
-                {
-                    i++;
-                    if (i == originalBody.Length)
-                    {
-                        // Reached end of file.
-                        break;
-                    }
-                    member += originalBody[i];
-                    if (originalBody[i] == '}')
-                    {
-                        bracketBalance++;
-                    }
-                    else if (originalBody[i] == '{')
-                    {
-                        bracketBalance--;
-                    }
-                    if (bracketBalance == 0)
-                    {
-                        break;
-                    }
-                }
+                i = ScanUtils.SkipBlock(originalBody, i, member);
                 members.Add(new Block(member));
                 member = "";
                 continue;
