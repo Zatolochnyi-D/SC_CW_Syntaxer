@@ -42,6 +42,12 @@ public class Block : IMember
 
     public override string ToString()
     {
-        return content.Replace('\n', '\0');
+        string result = "";
+        foreach (var member in members)
+        {
+            result += member.ToString()!.Trim();
+            result += '\n';
+        }
+        return result;
     }
 }

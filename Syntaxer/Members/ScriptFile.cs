@@ -51,7 +51,7 @@ public class ScriptFile : IMember
         string result = "";
         foreach (var member in members)
         {
-            result += member.ToString();
+            result += member.ToString()!.Trim();
             result += '\n';
         }
         return result;

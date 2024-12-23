@@ -19,6 +19,6 @@ public class Instruction : IMember
 
     public override string ToString()
     {
-        return body.Replace('\n', '\0');
+        return body.Replace('\n', '\0').Trim();
     }
 }
