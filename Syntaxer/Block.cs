@@ -1,4 +1,4 @@
-namespace Syntax;
+namespace Syntaxer;
 
 public class Block
 {
