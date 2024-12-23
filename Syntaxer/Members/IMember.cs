@@ -1,4 +1,4 @@
-namespace Syntaxer;
+namespace Syntaxer.Members;
 
 public interface IMember
 {

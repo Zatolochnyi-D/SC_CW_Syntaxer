@@ -1,6 +1,6 @@
 using Syntaxer.Parsers;
 
-namespace Syntaxer;
+namespace Syntaxer.Members;
 
 public class ScriptFile : IMember
 {

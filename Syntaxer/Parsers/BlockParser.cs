@@ -1,3 +1,5 @@
+using Syntaxer.Members;
+
 namespace Syntaxer.Parsers;
 
 public enum StringType

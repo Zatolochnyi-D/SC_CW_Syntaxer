@@ -1,4 +1,4 @@
-namespace Syntaxer;
+namespace Syntaxer.Members;
 
 public class Instruction : IMember
 {
@@ -11,7 +11,7 @@ public class Instruction : IMember
 
     public void SplitContent()
     {
-        
+
     }
 
     public override string ToString()
