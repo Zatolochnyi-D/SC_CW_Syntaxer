@@ -16,4 +16,9 @@ public class Leftover : IMember
     {
         
     }
+
+    public override string ToString()
+    {
+        return body.Replace('\n', '\0');
+    }
 }
