@@ -1,14 +1,18 @@
+using Syntaxer.Parsers;
+
 namespace Syntaxer;
 
 public class ScriptFile : IMember
 {
     private string body;
+    private BlockParser parser;
     private List<string> linesOfFile = [];
     private List<IMember> members = [];
 
     public ScriptFile(string body)
     {
         this.body = body;
+        parser = new(body);
         SplitFileIntoLines();
         SplitContent();
         foreach (var m in members)
@@ -35,6 +39,6 @@ public class ScriptFile : IMember
 
     public void SplitContent()
     {
-        members = ScanUtils.ParseBody(body);
+        members = parser.ParseBody();
     }
 }

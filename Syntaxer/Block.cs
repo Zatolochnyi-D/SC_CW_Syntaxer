@@ -19,7 +19,7 @@ public class Block : IMember
 
     public void SplitContent()
     {
-        members = ScanUtils.ParseBody(content);
+        // members = ScanUtils.ParseBody(content);
     }
 
     public override string ToString()
