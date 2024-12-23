@@ -2,6 +2,9 @@ using Syntaxer.Parsers;
 
 namespace Syntaxer.Members;
 
+/// <summary>
+/// Stores content of individual file.
+/// </summary>
 public class ScriptFile : IMember
 {
     private string body;

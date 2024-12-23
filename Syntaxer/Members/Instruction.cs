@@ -1,5 +1,8 @@
 namespace Syntaxer.Members;
 
+/// <summary>
+/// Used to store any code that ends with ";"
+/// </summary>
 public class Instruction : IMember
 {
     private string body;

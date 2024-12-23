@@ -1,5 +1,8 @@
 namespace Syntaxer.Members;
 
+/// <summary>
+/// Used to store any separate block.
+/// </summary>
 public class Block : IMember
 {
     private string body;
