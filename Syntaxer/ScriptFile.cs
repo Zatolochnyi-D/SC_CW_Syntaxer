@@ -35,100 +35,34 @@ public class ScriptFile
     private void SplitFileIntoMembers()
     {
         string member = "";
+
         for (int i = 0; i < originalBody.Length; i++)
         {
             if (originalBody[i] == '/')
             {
                 // Possible comment.
-                if (originalBody[i + 1] == '/' && i != originalBody.Length - 1)
+                if (ScanUtils.IsLastSymbol(originalBody, i))
+                {
+                    // It's last symbol of the body. There can't be other / futher to form a comment.
+                    member += originalBody[i];
+                }
+                else if (originalBody[i + 1] == '/')
                 {
                     // It's a comment.
-                    while (true)
-                    {
-                        // Increment i until end of line or end of file found.
-                        i++;
-                        if (i == originalBody.Length)
-                        {
-                            break;
-                        }
-                        if (originalBody[i] == '\n')
-                        {
-                            break;
-                        }
-                    }
-                    continue;
+                    i = ScanUtils.SkipComment(originalBody, i);
                 }
+                continue;
             }
             else if (originalBody[i] == '\'')
             {
                 // Char declarator found.
-                member += originalBody[i];
-                while (true)
-                {
-                    // As it's a char, go forward and read it completely. It ignores structure and treats everything as content of char.
-                    i++;
-                    if (i == originalBody.Length)
-                    {
-                        // Reached end of file.
-                        break;
-                    }
-                    member += originalBody[i];
-                    if (originalBody[i] == '\'')
-                    {
-                        int j = 0;
-                        while (true)
-                        {
-                            // Go back and count amount of backslashes before char declarator.
-                            j++;
-                            if (originalBody[i - j] != '\\')
-                            {
-                                j--;
-                                break;
-                            }
-                        }
-                        if (j % 2 == 0)
-                        {
-                            // It's char end declarator.
-                            break;
-                        }
-                    }
-                }
+                i = ScanUtils.SkipString(originalBody, i, member, StringType.Char);
                 continue;
             }
             else if (originalBody[i] == '"')
             {
                 // String declarator found.
-                member += originalBody[i];
-                while (true)
-                {
-                    // As it's a char, go forward and read it completely. It ignores structure and treats everything as content of char.
-                    i++;
-                    if (i == originalBody.Length)
-                    {
-                        // Reached end of file.
-                        break;
-                    }
-                    member += originalBody[i];
-                    if (originalBody[i] == '"')
-                    {
-                        int j = 0;
-                        while (true)
-                        {
-                            // Go back and count amount of backslashes before string declarator.
-                            j++;
-                            if (originalBody[i - j] != '\\')
-                            {
-                                j--;
-                                break;
-                            }
-                        }
-                        if (j % 2 == 0)
-                        {
-                            // It's string end declarator.
-                            break;
-                        }
-                    }
-                }
+                i = ScanUtils.SkipString(originalBody, i, member, StringType.String);
                 continue;
             }
             else if (originalBody[i] == ';')
