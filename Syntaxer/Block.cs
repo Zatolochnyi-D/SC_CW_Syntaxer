@@ -1,16 +1,29 @@
 namespace Syntaxer;
 
-public class Block
+public class Block : IMember
 {
-    private string originalBody;
+    private string body;
+    private string content;
+    private List<object> members = [];
 
     public Block(string body)
     {
-        originalBody = body;
+        this.body = body;
+        int indexOfOpenBracket = body.IndexOf('{');
+        content = body[indexOfOpenBracket..];
+        if (content[^1] == '}')
+        {
+            content = content[..^1];
+        }
+    }
+
+    public void SplitContent()
+    {
+        members = ScanUtils.ParseBody(content);
     }
 
     public override string ToString()
     {
-        return originalBody.Replace('\n', '\0');
+        return content.Replace('\n', '\0');
     }
 }

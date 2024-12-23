@@ -1,15 +1,21 @@
 namespace Syntaxer;
 
-public class Instruction
+public class Instruction : IMember
 {
-    private string originalBody;
+    private string body;
 
     public Instruction(string body)
     {
-        originalBody = body;
+        this.body = body;
     }
+
+    public void SplitContent()
+    {
+        
+    }
+
     public override string ToString()
     {
-        return originalBody.Replace('\n', '\0');
+        return body.Replace('\n', '\0');
     }
 }
