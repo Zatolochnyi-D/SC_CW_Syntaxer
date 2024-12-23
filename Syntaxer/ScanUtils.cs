@@ -128,4 +128,60 @@ public static class ScanUtils
     {
         return position == body.Length - 1;
     }
+
+    public static List<object> ParseBody(string body)
+    {
+        string member = "";
+        List<object> members = [];
+
+        for (int i = 0; i < body.Length; i++)
+        {
+            if (body[i] == '/')
+            {
+                // Possible comment.
+                if (IsLastSymbol(body, i))
+                {
+                    // It's last symbol of the body. There can't be other / futher to form a comment.
+                    member += body[i];
+                }
+                else if (body[i + 1] == '/')
+                {
+                    // It's a comment.
+                    i = SkipComment(body, i);
+                }
+                continue;
+            }
+            else if (body[i] == '\'')
+            {
+                // Char declarator found.
+                i = SkipString(body, i, member, StringType.Char);
+                continue;
+            }
+            else if (body[i] == '"')
+            {
+                // String declarator found.
+                i = SkipString(body, i, member, StringType.String);
+                continue;
+            }
+            else if (body[i] == ';')
+            {
+                // End of instruction found.
+                member += body[i];
+                members.Add(new Instruction(member));
+                member = "";
+                continue;
+            }
+            else if (body[i] == '{')
+            {
+                // Start of block found.
+                i = SkipBlock(body, i, member);
+                members.Add(new Block(member));
+                member = "";
+                continue;
+            }
+            member += body[i];
+        }
+
+        return members;
+    }
 }
