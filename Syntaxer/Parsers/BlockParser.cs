@@ -184,6 +184,7 @@ public class BlockParser
             }
             member += body[i];
         }
+        members.Add(new Leftover(member));
         return members;
     }
 }
