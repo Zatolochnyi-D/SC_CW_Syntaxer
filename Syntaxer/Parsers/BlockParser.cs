@@ -10,11 +10,11 @@ public enum StringType
 
 public class BlockParser
 {
-    protected string Body;
+    private string body;
 
     public BlockParser(string body)
     {
-        Body = body;
+        this.body = body;
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ public class BlockParser
         {
             // Go back and count amount of backslashes before possible terminator.
             i++;
-            if (Body[position - i] != '\\')
+            if (body[position - i] != '\\')
             {
                 i--;
                 break;
@@ -45,7 +45,7 @@ public class BlockParser
     /// <returns>True, if position is no longer inside of the body.</returns>
     public bool IsEndOfBody(int position)
     {
-        return position == Body.Length;
+        return position == body.Length;
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class BlockParser
     /// <returns>True, if position leads to the last symbol of the body.</returns>
     public bool IsLastSymbol(int position)
     {
-        return position == Body.Length - 1;
+        return position == body.Length - 1;
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class BlockParser
             // Move position forward.
             position++;
             if (IsEndOfBody(position)) break; // Nothing to scan futher.
-        } while (Body[position] == '\n'); // It's an end of the comment.
+        } while (body[position] == '\n'); // It's an end of the comment.
         return position;
     }
 
@@ -96,14 +96,14 @@ public class BlockParser
                 throw new ArgumentException($"Unknown type was given - {type}");
         }
 
-        readOutput += Body[position];
+        readOutput += body[position];
         while (true)
         {
             // Move position forward and write contents. Look for termination symbol.
             position++;
             if (IsEndOfBody(position)) break; // Nothing to scan futher.
-            readOutput += Body[position];
-            if (Body[position] == terminationSymbol) if (IsStringTerminator(position)) break;
+            readOutput += body[position];
+            if (body[position] == terminationSymbol) if (IsStringTerminator(position)) break;
         }
         return position;
     }
@@ -116,16 +116,16 @@ public class BlockParser
     /// <returns>Position where block closing bracket was found.</returns>
     public int SkipBlock(int position, ref string readOutput)
     {
-        readOutput += Body[position];
+        readOutput += body[position];
         int bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
         while (true)
         {
             position++;
             if (IsEndOfBody(position)) break; // Nothing to scan futher.
-            readOutput += Body[position];
+            readOutput += body[position];
 
-            if (Body[position] == '}') bracketBalance++;
-            else if (Body[position] == '{') bracketBalance--;
+            if (body[position] == '}') bracketBalance++;
+            else if (body[position] == '{') bracketBalance--;
 
             if (bracketBalance == 0) break;
         }
@@ -137,44 +137,44 @@ public class BlockParser
         string member = "";
         List<IMember> members = [];
 
-        for (int i = 0; i < Body.Length; i++)
+        for (int i = 0; i < body.Length; i++)
         {
-            if (Body[i] == '/')
+            if (body[i] == '/')
             {
                 // Possible comment.
                 if (IsLastSymbol(i))
                 {
                     // It's last symbol of the body. There can't be other / futher to form a comment.
-                    member += Body[i];
+                    member += body[i];
                 }
-                else if (Body[i + 1] == '/')
+                else if (body[i + 1] == '/')
                 {
                     // It's a comment.
                     i = SkipComment(i);
                 }
                 continue;
             }
-            else if (Body[i] == '\'')
+            else if (body[i] == '\'')
             {
                 // Char declarator found.
                 i = SkipString(i, ref member, StringType.Char);
                 continue;
             }
-            else if (Body[i] == '"')
+            else if (body[i] == '"')
             {
                 // String declarator found.
                 i = SkipString(i, ref member, StringType.String);
                 continue;
             }
-            else if (Body[i] == ';')
+            else if (body[i] == ';')
             {
                 // End of instruction found.
-                member += Body[i];
+                member += body[i];
                 members.Add(new Instruction(member));
                 member = "";
                 continue;
             }
-            else if (Body[i] == '{')
+            else if (body[i] == '{')
             {
                 // Start of block found.
                 i = SkipBlock(i, ref member);
@@ -182,7 +182,7 @@ public class BlockParser
                 member = "";
                 continue;
             }
-            member += Body[i];
+            member += body[i];
         }
         return members;
     }
