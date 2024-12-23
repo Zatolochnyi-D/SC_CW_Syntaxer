@@ -2,13 +2,13 @@ namespace Syntaxer;
 
 public class ScriptFile : IMember
 {
-    private string originalBody;
+    private string body;
     private List<string> linesOfFile = [];
     private List<object> members = [];
 
     public ScriptFile(string body)
     {
-        originalBody = body;
+        this.body = body;
         SplitFileIntoLines();
         SplitContent();
     }
@@ -16,7 +16,7 @@ public class ScriptFile : IMember
     private void SplitFileIntoLines()
     {
         string line = "";
-        foreach (var symbol in originalBody)
+        foreach (var symbol in body)
         {
             if (symbol == '\n')
             {
@@ -31,6 +31,6 @@ public class ScriptFile : IMember
 
     public void SplitContent()
     {
-        
+        members = ScanUtils.ParseBody(body);
     }
 }
