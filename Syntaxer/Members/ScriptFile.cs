@@ -18,10 +18,7 @@ public class ScriptFile : IMember
         parser = new(body);
         SplitFileIntoLines();
         SplitContent();
-        foreach (var m in members)
-        {
-            Console.WriteLine(m);
-        }
+        Console.WriteLine(this);
     }
 
     private void SplitFileIntoLines()
@@ -43,5 +40,20 @@ public class ScriptFile : IMember
     public void SplitContent()
     {
         members = parser.ParseBody();
+        foreach (var member in members)
+        {
+            member.SplitContent();
+        }
+    }
+
+    public override string ToString()
+    {
+        string result = "";
+        foreach (var member in members)
+        {
+            result += member.ToString();
+            result += '\n';
+        }
+        return result;
     }
 }
