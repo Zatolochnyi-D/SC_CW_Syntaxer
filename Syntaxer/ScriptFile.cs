@@ -4,7 +4,7 @@ public class ScriptFile : IMember
 {
     private string body;
     private List<string> linesOfFile = [];
-    private List<object> members = [];
+    private List<IMember> members = [];
 
     public ScriptFile(string body)
     {

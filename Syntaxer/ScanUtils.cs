@@ -129,10 +129,10 @@ public static class ScanUtils
         return position == body.Length - 1;
     }
 
-    public static List<object> ParseBody(string body)
+    public static List<IMember> ParseBody(string body)
     {
         string member = "";
-        List<object> members = [];
+        List<IMember> members = [];
 
         for (int i = 0; i < body.Length; i++)
         {

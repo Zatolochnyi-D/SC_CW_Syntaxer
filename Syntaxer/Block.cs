@@ -4,7 +4,7 @@ public class Block : IMember
 {
     private string body;
     private string content;
-    private List<object> members = [];
+    private List<IMember> members = [];
 
     public Block(string body)
     {
