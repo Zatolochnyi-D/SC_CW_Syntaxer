@@ -11,6 +11,10 @@ public class ScriptFile : IMember
         this.body = body;
         SplitFileIntoLines();
         SplitContent();
+        foreach (var m in members)
+        {
+            Console.WriteLine(m);
+        }
     }
 
     private void SplitFileIntoLines()

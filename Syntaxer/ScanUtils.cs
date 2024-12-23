@@ -33,7 +33,7 @@ public static class ScanUtils
     /// <param name="readOutput">String to where string (char) content should be appended.</param>
     /// <param name="type">Is it string or char.</param>
     /// <returns>Position of string (char) terminator.</returns>
-    public static int SkipString(string body, int position, string readOutput, StringType type)
+    public static int SkipString(string body, int position, ref string readOutput, StringType type)
     {
         char terminationSymbol;
         switch (type)
@@ -67,7 +67,7 @@ public static class ScanUtils
     /// <param name="position">Cursor position where block open bracket is found.</param>
     /// <param name="readOutput">String to where block contents should be written.</param>
     /// <returns>Position where block closing bracket was found.</returns>
-    public static int SkipBlock(string body, int position, string readOutput)
+    public static int SkipBlock(string body, int position, ref string readOutput)
     {
         readOutput += body[position];
         int bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
@@ -154,13 +154,13 @@ public static class ScanUtils
             else if (body[i] == '\'')
             {
                 // Char declarator found.
-                i = SkipString(body, i, member, StringType.Char);
+                i = SkipString(body, i, ref member, StringType.Char);
                 continue;
             }
             else if (body[i] == '"')
             {
                 // String declarator found.
-                i = SkipString(body, i, member, StringType.String);
+                i = SkipString(body, i, ref member, StringType.String);
                 continue;
             }
             else if (body[i] == ';')
@@ -174,14 +174,13 @@ public static class ScanUtils
             else if (body[i] == '{')
             {
                 // Start of block found.
-                i = SkipBlock(body, i, member);
+                i = SkipBlock(body, i, ref member);
                 members.Add(new Block(member));
                 member = "";
                 continue;
             }
             member += body[i];
         }
-
         return members;
     }
 }
