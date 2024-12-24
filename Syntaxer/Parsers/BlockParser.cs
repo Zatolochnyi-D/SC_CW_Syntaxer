@@ -195,7 +195,11 @@ public class BlockParser
             }
             member += body[i];
         }
-        members.Add(new Leftover(member, startPosition, body.Length - 1));
+        if (member.Any(char.IsLetterOrDigit))
+        {
+            // Do not create leftover if string is empty actually.
+            members.Add(new Leftover(member, startPosition, beginPosition + body.Length - 1));
+        }
         return members;
     }
 }
