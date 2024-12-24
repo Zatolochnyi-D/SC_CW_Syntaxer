@@ -6,10 +6,14 @@ namespace Syntaxer.Members;
 public class Leftover : IMember
 {
     private string body;
+    private int beginPosition;
+    private int endPosition;
 
-    public Leftover(string body)
+    public Leftover(string body, int beginPosition, int endPosition)
     {
         this.body = body;
+        this.beginPosition = beginPosition;
+        this.endPosition = endPosition;
     }
 
     public void SplitContent()
@@ -19,6 +23,9 @@ public class Leftover : IMember
 
     public override string ToString()
     {
-        return body.Replace('\n', '\0').Trim();
+        string result = "";
+        result += $"{beginPosition}, {endPosition}: ";
+        result += body.Replace('\n', '\0').Trim();
+        return result;
     }
 }

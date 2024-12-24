@@ -15,7 +15,7 @@ public class ScriptFile : IMember
     public ScriptFile(string body)
     {
         this.body = body;
-        parser = new(body);
+        parser = new(body, 0, body.Length - 1);
         SplitFileIntoLines();
         SplitContent();
         Console.WriteLine(this);
@@ -40,10 +40,27 @@ public class ScriptFile : IMember
     public void SplitContent()
     {
         members = parser.ParseBody();
-        foreach (var member in members)
+        foreach (var member in members) // comment
         {
             member.SplitContent();
         }
+    }
+
+    public (int line, int column) IndexToCoordinates(int index)
+    {
+        int line = 0;
+        int column = index;
+        for (int i = 0; i < linesOfFile.Count; i++)
+        {
+            column -= linesOfFile[i].Length;
+            if (column < 0)
+            {
+                column += linesOfFile[i].Length; // commetn
+                line = i - 1;
+            }
+        }
+
+        return (line, column);
     }
 
     public override string ToString()
@@ -51,8 +68,8 @@ public class ScriptFile : IMember
         string result = "";
         foreach (var member in members)
         {
-            result += member.ToString()!.Trim();
             result += '\n';
+            result += member.ToString();
         }
         return result;
     }

@@ -12,8 +12,11 @@ public class Block : IMember
     private string content; // part after "{" that holds info inside the block.
     private BlockParser parser;
     private List<IMember> members = [];
+    private int beginPosition;
+    private int endPosition;
 
-    public Block(string body)
+
+    public Block(string body, int beginPosition, int endPosition)
     {
         this.body = body;
         int indexOfOpenBracket = body.IndexOf('{');
@@ -28,7 +31,9 @@ public class Block : IMember
         {
             content = "";
         }
-        parser = new(content);
+        this.beginPosition = beginPosition;
+        this.endPosition = endPosition;
+        parser = new(content, beginPosition, endPosition);
     }
 
     public void SplitContent()
@@ -43,10 +48,12 @@ public class Block : IMember
     public override string ToString()
     {
         string result = "";
+        result += $"{beginPosition}, {endPosition}: ";
+        result += identifier.Replace('\n', '\0').Trim();
         foreach (var member in members)
         {
-            result += member.ToString()!.Trim();
             result += '\n';
+            result += member.ToString();
         }
         return result;
     }

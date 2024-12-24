@@ -11,10 +11,14 @@ public enum StringType
 public class BlockParser
 {
     private string body;
+    private int beginPosition;
+    private int endPosition;
 
-    public BlockParser(string body)
+    public BlockParser(string body, int beginPosition, int endPosition)
     {
         this.body = body;
+        this.beginPosition = beginPosition;
+        this.endPosition = endPosition;
     }
 
     /// <summary>
@@ -70,7 +74,7 @@ public class BlockParser
             // Move position forward.
             position++;
             if (IsEndOfBody(position)) break; // Nothing to scan futher.
-        } while (body[position] == '\n'); // It's an end of the comment.
+        } while (body[position] != '\n'); // It's an end of the comment.
         return position;
     }
 
@@ -136,6 +140,7 @@ public class BlockParser
     {
         string member = "";
         List<IMember> members = [];
+        int startPosition = beginPosition;
 
         for (int i = 0; i < body.Length; i++)
         {
@@ -151,6 +156,10 @@ public class BlockParser
                 {
                     // It's a comment.
                     i = SkipComment(i);
+                }
+                else
+                {
+                    member += body[i];
                 }
                 continue;
             }
@@ -170,7 +179,8 @@ public class BlockParser
             {
                 // End of instruction found.
                 member += body[i];
-                members.Add(new Instruction(member));
+                members.Add(new Instruction(member, startPosition, beginPosition + i));
+                startPosition = beginPosition + i + 1;
                 member = "";
                 continue;
             }
@@ -178,13 +188,14 @@ public class BlockParser
             {
                 // Start of block found.
                 i = SkipBlock(i, ref member);
-                members.Add(new Block(member));
+                members.Add(new Block(member, startPosition, beginPosition + i));
+                startPosition = beginPosition + i + 1;
                 member = "";
                 continue;
             }
             member += body[i];
         }
-        members.Add(new Leftover(member));
+        members.Add(new Leftover(member, startPosition, body.Length - 1));
         return members;
     }
 }

@@ -6,10 +6,15 @@ namespace Syntaxer.Members;
 public class Instruction : IMember
 {
     private string body;
+    private int beginPosition;
+    private int endPosition;
 
-    public Instruction(string body)
+
+    public Instruction(string body, int beginPosition, int endPosition)
     {
         this.body = body;
+        this.beginPosition = beginPosition;
+        this.endPosition = endPosition;
     }
 
     public void SplitContent()
@@ -19,6 +24,9 @@ public class Instruction : IMember
 
     public override string ToString()
     {
-        return body.Replace('\n', '\0').Trim();
+        string result = "";
+        result += $"{beginPosition}, {endPosition}: ";
+        result += body.Replace('\n', '\0').Trim();
+        return result;
     }
 }
