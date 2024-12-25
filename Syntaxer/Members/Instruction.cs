@@ -9,16 +9,33 @@ public class Instruction : IMember
     private ScriptFile parentFile;
     private IMember parentMember;
     private string body;
-    private int beginPosition;
-    private int endPosition;
+    private int beginPosition; // Position of first non-empty symbol in body.
+    private int endPosition; // Position of last non-empty symbol in body (should be ;).
 
     public Instruction(string body, int beginPosition, int endPosition, ScriptFile parentFile, IMember parentMember)
     {
         this.body = body;
-        this.beginPosition = beginPosition;
-        this.endPosition = endPosition;
         this.parentFile = parentFile;
         this.parentMember = parentMember;
+
+        for (int i = 0; i < body.Length; i++)
+        {
+            if (!char.IsWhiteSpace(body[i]))
+            {
+                // It's first non-empty character at the body's beginning. It should be begin position;
+                this.beginPosition = beginPosition + i;
+                break;
+            }
+        }
+        for (int i = 0; i < body.Length; i++)
+        {
+            if (!char.IsWhiteSpace(body[^(i + 1)]))
+            {
+                // It's first non-empty character in end of the body. It should be end position;
+                this.endPosition = endPosition - i;
+                break;
+            }
+        }
     }
 
     public void SplitContent()
