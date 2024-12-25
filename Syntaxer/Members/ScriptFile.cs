@@ -11,11 +11,15 @@ public class ScriptFile : IMember
     private BlockParser parser;
     private List<int> lineLengths = [];
     private List<IMember> members = [];
+    private (int begin, int end) dimension;
+
+    public ScriptFile ParentFile => this;
 
     public ScriptFile(string fileContent)
     {
         body = fileContent;
-        parser = new(body, 0, body.Length - 1, this, this);
+        dimension = (0, body.Length - 1); // First and last characters of the file.
+        parser = new(body, dimension.begin, dimension.end, this, this);
         SplitFileIntoLines();
         SplitContent();
         Console.WriteLine(this);
