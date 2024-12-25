@@ -29,7 +29,7 @@ public class ScriptFile : IMember
     public void SplitContent()
     {
         members = parser.ParseBody();
-        foreach (var member in members) // comment
+        foreach (var member in members) // Testing comment
         {
             member.SplitContent();
         }
@@ -44,10 +44,10 @@ public class ScriptFile : IMember
             column -= linesOfFile[i].Length;
             if (column < 0)
             {
-                column += linesOfFile[i].Length; // commetn
+                column += linesOfFile[i].Length;
                 line = i - 1;
             }
-        }
+        } // Testing comment ommition.
 
         return (line, column);
     }
