@@ -54,7 +54,7 @@ public class Block : IMember
         string result = "";
         (int line, int column) start = parentFile.IndexToCoordinates(beginPosition);
         (int line, int column) end = parentFile.IndexToCoordinates(endPosition);
-        result += $"l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
+        result += $"s: {beginPosition}, e: {endPosition}; l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
         result += identifier.Replace('\n', '\0').Trim();
         foreach (var member in members)
         {
