@@ -63,12 +63,14 @@ public class BlockParser
     }
 
     /// <summary>
-    /// Moves position cursor forward until end of comment found.
+    /// Moves position cursor forward until end of comment found. Outputs space characters for each comment symbol to preserve length.
     /// </summary>
     /// <param name="position">Position of cursor, where first / (slash) of comment found.</param>
+    /// <param name="readOutput">String to where output empty space.</param>
     /// <returns>Position where comment ends or last symbol of the body.</returns>
-    public int SkipComment(int position)
+    public int SkipComment(int position, ref string readOutput)
     {
+        readOutput += ' ';
         do
         {
             // Move position forward.
@@ -78,6 +80,7 @@ public class BlockParser
                 position--; // So method returns last symbol.
                 break; // Nothing to scan futher.
             }
+            readOutput += ' ';
         } while (body[position] != '\n'); // It's an end of the comment.
         return position;
     }
@@ -167,7 +170,7 @@ public class BlockParser
                 else if (body[i + 1] == '/')
                 {
                     // It's a comment.
-                    i = SkipComment(i);
+                    i = SkipComment(i, ref member);
                 }
                 else
                 {
