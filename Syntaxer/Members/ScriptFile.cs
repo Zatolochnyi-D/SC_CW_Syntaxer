@@ -12,9 +12,9 @@ public class ScriptFile : IMember
     private List<int> lineLengths = [];
     private List<IMember> members = [];
 
-    public ScriptFile(string body)
+    public ScriptFile(string fileContent)
     {
-        this.body = body;
+        body = fileContent;
         parser = new(body, 0, body.Length - 1, this, this);
         SplitFileIntoLines();
         SplitContent();
