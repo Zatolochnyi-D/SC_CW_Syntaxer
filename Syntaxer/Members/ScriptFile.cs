@@ -59,6 +59,7 @@ public class ScriptFile : IMember
 
     public override string ToString()
     {
+        Console.WriteLine(body.Length);
         string result = "";
         foreach (var member in members)
         {
