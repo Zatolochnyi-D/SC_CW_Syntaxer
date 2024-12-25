@@ -199,7 +199,7 @@ public class BlockParser
             }
             member += body[i];
         }
-        if (member.Any(char.IsLetterOrDigit))
+        if (!member.All(char.IsWhiteSpace))
         {
             // Do not create leftover if string is empty actually.
             members.Add(new Leftover(member, startPosition, beginPosition + body.Length - 1, parentFile, parentMember));
