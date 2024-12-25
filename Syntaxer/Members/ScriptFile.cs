@@ -9,7 +9,7 @@ public class ScriptFile : IMember
 {
     private string body;
     private BlockParser parser;
-    private List<string> linesOfFile = [];
+    private List<int> lineLengths = [];
     private List<IMember> members = [];
 
     public ScriptFile(string body)
@@ -23,7 +23,7 @@ public class ScriptFile : IMember
 
     private void SplitFileIntoLines()
     {
-        linesOfFile = new(body.Split('\n'));
+        lineLengths = body.Split('\n').Select(x => x.Length + 1).ToList();
     }
 
     public void SplitContent()
@@ -39,13 +39,14 @@ public class ScriptFile : IMember
     {
         int line = 0;
         int column = index;
-        for (int i = 0; i < linesOfFile.Count; i++)
+        for (int i = 0; i < lineLengths.Count; i++)
         {
-            column -= linesOfFile[i].Length;
+            column -= lineLengths[i];
             if (column < 0)
             {
-                column += linesOfFile[i].Length;
-                line = i - 1;
+                column += lineLengths[i];
+                line = i;
+                break;
             }
         } // Testing comment ommition.
 
