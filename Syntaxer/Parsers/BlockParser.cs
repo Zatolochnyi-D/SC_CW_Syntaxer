@@ -213,7 +213,7 @@ public class BlockParser
         if (!member.All(char.IsWhiteSpace))
         {
             // Do not create leftover if string is empty actually.
-            members.Add(new Leftover(member, start, dimension.begin + body.Length - 1, parent.ParentFile, parent));
+            members.Add(new Leftover(member, (start, dimension.begin + body.Length - 1), parent));
         }
         return members;
     }
