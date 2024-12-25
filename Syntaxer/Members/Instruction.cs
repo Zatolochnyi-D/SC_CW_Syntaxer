@@ -7,35 +7,32 @@ namespace Syntaxer.Members;
 public class Instruction : IMember
 {
     private ScriptFile parentFile;
-    private IMember parentMember;
+    private IMember parent;
     private string body;
-    private int beginPosition; // Position of first non-empty symbol in body.
-    private int endPosition; // Position of last non-empty symbol in body (should be ;).
+    private (int begin, int end) dimension;
 
-    public Instruction(string body, int beginPosition, int endPosition, ScriptFile parentFile, IMember parentMember)
+    public ScriptFile ParentFile => parentFile;
+
+    public Instruction(string instructionContent, (int, int) dimension, IMember parent)
     {
-        this.body = body;
-        this.parentFile = parentFile;
-        this.parentMember = parentMember;
+        body = instructionContent;
+        this.parent = parent;
+        parentFile = parent.ParentFile;
+        // Begin of given dimension is first character after end of previous instruction/block. This value need refining.
+        // End is ";", as otherwise no instruction could be created at first place. This value can be taken as is.
+        this.dimension = dimension;
 
-        for (int i = 0; i < body.Length; i++)
+        // Iterate through first characters in body to find first non-empty character. It's position should be taken as beginning.
+        for (int i = 0; i < instructionContent.Length; i++)
         {
-            if (!char.IsWhiteSpace(body[i]))
+            if (!char.IsWhiteSpace(instructionContent[i]))
             {
-                // It's first non-empty character at the body's beginning. It should be begin position;
-                this.beginPosition = beginPosition + i;
+                // It's first non-empty character at the body's beginning. It should be begin position.
+                this.dimension.begin += i;
                 break;
             }
         }
-        for (int i = 0; i < body.Length; i++)
-        {
-            if (!char.IsWhiteSpace(body[^(i + 1)]))
-            {
-                // It's first non-empty character in end of the body. It should be end position;
-                this.endPosition = endPosition - i;
-                break;
-            }
-        }
+        // Here will be created instruction parser.
     }
 
     public void SplitContent()
@@ -46,9 +43,9 @@ public class Instruction : IMember
     public override string ToString()
     {
         string result = "";
-        (int line, int column) start = parentFile.IndexToCoordinates(beginPosition);
-        (int line, int column) end = parentFile.IndexToCoordinates(endPosition);
-        result += $"s: {beginPosition}, e: {endPosition}; l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
+        (int line, int column) start = parentFile.IndexToCoordinates(dimension.begin);
+        (int line, int column) end = parentFile.IndexToCoordinates(dimension.end);
+        result += $"s: {dimension.begin}, e: {dimension.end}; l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
         result += body.Replace('\n', '\0').Trim();
         return result;
     }

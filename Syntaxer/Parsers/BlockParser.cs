@@ -192,7 +192,7 @@ public class BlockParser
                 // End of instruction found.
                 member += body[i];
                 int end = dimension.begin + i; // Points at ";". "i" is local position, shift by begin to convert to file postion.
-                members.Add(new Instruction(member, start, end, parent.ParentFile, parent));
+                members.Add(new Instruction(member, dimension, parent));
                 start = dimension.begin + i + 1; // Next symbol becomes start of next instruction/block.
                 member = "";
                 continue;
