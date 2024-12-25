@@ -10,19 +10,15 @@ public enum StringType
 
 public class BlockParser
 {
-    private ScriptFile parentFile;
-    private IMember parentMember;
+    private IMember parent;
     private string body;
-    private int beginPosition;
-    private int endPosition;
+    private (int begin, int end) dimension;
 
-    public BlockParser(string body, int beginPosition, int endPosition, ScriptFile parentFile, IMember parentMember)
+    public BlockParser(string body, (int, int) dimension, IMember parent)
     {
         this.body = body;
-        this.beginPosition = beginPosition;
-        this.endPosition = endPosition;
-        this.parentFile = parentFile;
-        this.parentMember = parentMember;
+        this.dimension = dimension;
+        this.parent = parent;
     }
 
     /// <summary>
@@ -70,14 +66,18 @@ public class BlockParser
     /// Moves position cursor forward until end of comment found.
     /// </summary>
     /// <param name="position">Position of cursor, where first / (slash) of comment found.</param>
-    /// <returns>Position where comment ends.</returns>
+    /// <returns>Position where comment ends or last symbol of the body.</returns>
     public int SkipComment(int position)
     {
         do
         {
             // Move position forward.
             position++;
-            if (IsEndOfBody(position)) break; // Nothing to scan futher.
+            if (IsEndOfBody(position))
+            {
+                position--; // So method returns last symbol.
+                break; // Nothing to scan futher.
+            }
         } while (body[position] != '\n'); // It's an end of the comment.
         return position;
     }
@@ -88,7 +88,7 @@ public class BlockParser
     /// <param name="position">Position of cursor, where opening symbol was found.</param>
     /// <param name="readOutput">String to where string (char) content should be appended.</param>
     /// <param name="type">Is it string or char.</param>
-    /// <returns>Position of string (char) terminator.</returns>
+    /// <returns>Position where string end (string termionator or last symbol of the file).</returns>
     public int SkipString(int position, ref string readOutput, StringType type)
     {
         char terminationSymbol;
@@ -109,7 +109,11 @@ public class BlockParser
         {
             // Move position forward and write contents. Look for termination symbol.
             position++;
-            if (IsEndOfBody(position)) break; // Nothing to scan futher.
+            if (IsEndOfBody(position))
+            {
+                position--;
+                break; // Nothing to scan futher.
+            }
             readOutput += body[position];
             if (body[position] == terminationSymbol) if (IsStringTerminator(position)) break;
         }
@@ -121,7 +125,7 @@ public class BlockParser
     /// </summary>
     /// <param name="position">Cursor position where block open bracket is found.</param>
     /// <param name="readOutput">String to where block contents should be written.</param>
-    /// <returns>Position where block closing bracket was found.</returns>
+    /// <returns>Position where block closing bracket or last symbol of body was found.</returns>
     public int SkipBlock(int position, ref string readOutput)
     {
         readOutput += body[position];
@@ -129,7 +133,11 @@ public class BlockParser
         while (true)
         {
             position++;
-            if (IsEndOfBody(position)) break; // Nothing to scan futher.
+            if (IsEndOfBody(position))
+            {
+                position--;
+                break; // Nothing to scan futher.
+            }
             readOutput += body[position];
 
             if (body[position] == '}') bracketBalance++;
@@ -143,8 +151,8 @@ public class BlockParser
     public List<IMember> ParseBody()
     {
         string member = "";
+        int start = dimension.begin;
         List<IMember> members = [];
-        int startPosition = beginPosition;
 
         for (int i = 0; i < body.Length; i++)
         {
@@ -183,26 +191,29 @@ public class BlockParser
             {
                 // End of instruction found.
                 member += body[i];
-                members.Add(new Instruction(member, startPosition, beginPosition + i, parentFile, parentMember));
-                startPosition = beginPosition + i + 1;
+                int end = dimension.begin + i; // Points at ";". "i" is local position, shift by begin to convert to file postion.
+                members.Add(new Instruction(member, start, end, parent.ParentFile, parent));
+                start = dimension.begin + i + 1; // Next symbol becomes start of next instruction/block.
                 member = "";
                 continue;
             }
             else if (body[i] == '{')
             {
                 // Start of block found.
-                i = SkipBlock(i, ref member);
-                members.Add(new Block(member, startPosition, beginPosition + i, parentFile, parentMember));
-                startPosition = beginPosition + i + 1;
+                i = SkipBlock(i, ref member); // This i either position of "}" or last symbol of the file.
+                int end = dimension.begin + i;
+                members.Add(new Block(member, start, end, parent.ParentFile, parent));
+                start = dimension.begin + i + 1;
                 member = "";
                 continue;
             }
             member += body[i];
         }
+        // Leftover is created, if after previous block/instruction there is still symbols, and those symbols are not any whitespace characters.
         if (!member.All(char.IsWhiteSpace))
         {
             // Do not create leftover if string is empty actually.
-            members.Add(new Leftover(member, startPosition, beginPosition + body.Length - 1, parentFile, parentMember));
+            members.Add(new Leftover(member, start, dimension.begin + body.Length - 1, parent.ParentFile, parent));
         }
         return members;
     }

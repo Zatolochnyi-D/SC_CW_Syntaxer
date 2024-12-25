@@ -19,7 +19,7 @@ public class ScriptFile : IMember
     {
         body = fileContent;
         dimension = (0, body.Length - 1); // First and last characters of the file.
-        parser = new(body, dimension.begin, dimension.end, this, this);
+        parser = new(body, dimension, this);
         SplitFileIntoLines();
         SplitContent();
         Console.WriteLine(this);
