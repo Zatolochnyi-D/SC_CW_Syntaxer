@@ -192,7 +192,7 @@ public class BlockParser
                 // End of instruction found.
                 member += body[i];
                 int end = dimension.begin + i; // Points at ";". "i" is local position, shift by begin to convert to file postion.
-                members.Add(new Instruction(member, dimension, parent));
+                members.Add(new Instruction(member, (start, end), parent));
                 start = dimension.begin + i + 1; // Next symbol becomes start of next instruction/block.
                 member = "";
                 continue;
@@ -202,7 +202,7 @@ public class BlockParser
                 // Start of block found.
                 i = SkipBlock(i, ref member); // This i either position of "}" or last symbol of the file.
                 int end = dimension.begin + i;
-                members.Add(new Block(member, start, end, parent.ParentFile, parent));
+                members.Add(new Block(member, (start, end), parent));
                 start = dimension.begin + i + 1;
                 member = "";
                 continue;
