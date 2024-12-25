@@ -7,6 +7,8 @@ namespace Syntaxer.Members;
 /// </summary>
 public class Block : IMember
 {
+    private ScriptFile parentFile;
+    private IMember parentMember;
     private string body;
     private string identifier; // part before "{" that holds info about block.
     private string content; // part after "{" that holds info inside the block.
@@ -16,7 +18,7 @@ public class Block : IMember
     private int endPosition;
 
 
-    public Block(string body, int beginPosition, int endPosition)
+    public Block(string body, int beginPosition, int endPosition, ScriptFile parentFile, IMember parentMember)
     {
         this.body = body;
         int indexOfOpenBracket = body.IndexOf('{');
@@ -33,7 +35,9 @@ public class Block : IMember
         }
         this.beginPosition = beginPosition;
         this.endPosition = endPosition;
-        parser = new(content, beginPosition, endPosition);
+        parser = new(content, beginPosition, endPosition, parentFile, this);
+        this.parentFile = parentFile;
+        this.parentMember = parentMember;
     }
 
     public void SplitContent()
@@ -48,7 +52,9 @@ public class Block : IMember
     public override string ToString()
     {
         string result = "";
-        result += $"{beginPosition}, {endPosition}: ";
+        (int line, int column) start = parentFile.IndexToCoordinates(beginPosition);
+        (int line, int column) end = parentFile.IndexToCoordinates(endPosition);
+        result += $"l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
         result += identifier.Replace('\n', '\0').Trim();
         foreach (var member in members)
         {

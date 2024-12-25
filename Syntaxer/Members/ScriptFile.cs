@@ -15,7 +15,7 @@ public class ScriptFile : IMember
     public ScriptFile(string body)
     {
         this.body = body;
-        parser = new(body, 0, body.Length - 1);
+        parser = new(body, 0, body.Length - 1, this, this);
         SplitFileIntoLines();
         SplitContent();
         Console.WriteLine(this);
@@ -23,18 +23,7 @@ public class ScriptFile : IMember
 
     private void SplitFileIntoLines()
     {
-        string line = "";
-        foreach (var symbol in body)
-        {
-            if (symbol == '\n')
-            {
-                linesOfFile.Add(line);
-                line = "";
-                continue;
-            }
-            line += symbol;
-        }
-        linesOfFile.Add(line);
+        linesOfFile = new(body.Split('\n'));
     }
 
     public void SplitContent()

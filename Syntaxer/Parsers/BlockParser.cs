@@ -10,15 +10,19 @@ public enum StringType
 
 public class BlockParser
 {
+    private ScriptFile parentFile;
+    private IMember parentMember;
     private string body;
     private int beginPosition;
     private int endPosition;
 
-    public BlockParser(string body, int beginPosition, int endPosition)
+    public BlockParser(string body, int beginPosition, int endPosition, ScriptFile parentFile, IMember parentMember)
     {
         this.body = body;
         this.beginPosition = beginPosition;
         this.endPosition = endPosition;
+        this.parentFile = parentFile;
+        this.parentMember = parentMember;
     }
 
     /// <summary>
@@ -179,7 +183,7 @@ public class BlockParser
             {
                 // End of instruction found.
                 member += body[i];
-                members.Add(new Instruction(member, startPosition, beginPosition + i));
+                members.Add(new Instruction(member, startPosition, beginPosition + i, parentFile, parentMember));
                 startPosition = beginPosition + i + 1;
                 member = "";
                 continue;
@@ -188,7 +192,7 @@ public class BlockParser
             {
                 // Start of block found.
                 i = SkipBlock(i, ref member);
-                members.Add(new Block(member, startPosition, beginPosition + i));
+                members.Add(new Block(member, startPosition, beginPosition + i, parentFile, parentMember));
                 startPosition = beginPosition + i + 1;
                 member = "";
                 continue;
@@ -198,7 +202,7 @@ public class BlockParser
         if (member.Any(char.IsLetterOrDigit))
         {
             // Do not create leftover if string is empty actually.
-            members.Add(new Leftover(member, startPosition, beginPosition + body.Length - 1));
+            members.Add(new Leftover(member, startPosition, beginPosition + body.Length - 1, parentFile, parentMember));
         }
         return members;
     }
