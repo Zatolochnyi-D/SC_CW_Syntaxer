@@ -59,18 +59,18 @@ public class Block : IMember
         wholeDimension = dimension;
 
         // Begin of identifier is first non-empty character after dimension.begin. End of identifier is first non-empty character before "{"
-        identifierDimension = dimension;
+        identifierDimension = (wholeDimension.begin, wholeDimension.begin + indexOfOpenBracket - 1);
         bool beginFound = false;
         bool endFound = false;
         for (int i = 0; i < identifier.Length; i++)
         {
-            if (!beginFound || !char.IsWhiteSpace(identifier[i]))
+            if (!beginFound) if (!char.IsWhiteSpace(identifier[i]))
             {
                 // First non-empty character.
                 identifierDimension.begin += i;
                 beginFound = true;
             }
-            if (!endFound || !char.IsWhiteSpace(identifier[^(i + 1)]))
+            if (!endFound) if (!char.IsWhiteSpace(identifier[^(i + 1)]))
             {
                 // Last non-empty character.
                 identifierDimension.end -= i;
@@ -101,7 +101,7 @@ public class Block : IMember
         string result = "";
         (int line, int column) start = parentFile.IndexToCoordinates(identifierDimension.begin);
         (int line, int column) end = parentFile.IndexToCoordinates(identifierDimension.end);
-        result += $"s: {identifierDimension.begin}, e: {identifierDimension.begin}; l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
+        result += $"s: {identifierDimension.begin}, e: {identifierDimension.end}; l: {start.line}, c: {start.column}; l: {end.line}, c: {end.column} -> ";
         result += identifier.Replace('\n', '\0').Trim();
         foreach (var member in members)
         {
