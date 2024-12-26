@@ -36,7 +36,7 @@ public class ScriptFile : IMember
         try
         {
             members = parser.ParseBody();
-            foreach (var member in members) // Testing comment
+            foreach (var member in members)
             {
                 member.SplitContent();
             }
@@ -60,7 +60,7 @@ public class ScriptFile : IMember
                 line = i;
                 break;
             }
-        } // Testing comment ommition.
+        }
 
         return (line, column);
     }
