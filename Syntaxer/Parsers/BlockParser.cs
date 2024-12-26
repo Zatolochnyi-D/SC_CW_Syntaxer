@@ -1,3 +1,4 @@
+using Syntaxer.Exceptions;
 using Syntaxer.Members;
 
 namespace Syntaxer.Parsers;
@@ -92,8 +93,11 @@ public class BlockParser
     /// <param name="readOutput">String to where string (char) content should be appended.</param>
     /// <param name="type">Is it string or char.</param>
     /// <returns>Position where string end (string termionator or last symbol of the file).</returns>
+    /// <exception cref="NotImplementedException">Throws exception if nes StringType is added but reaction on it is not implemented.</exception>
+    /// <exception cref="OpenStringException">Happens when all body was scanned, but end of string was not found.</exception>
     public int SkipString(int position, ref string readOutput, StringType type)
     {
+        int start = position;
         char terminationSymbol;
         switch (type)
         {
@@ -104,7 +108,7 @@ public class BlockParser
                 terminationSymbol = '\'';
                 break;
             default:
-                throw new ArgumentException($"Unknown type was given - {type}");
+                throw new NotImplementedException($"Unknown type was given - {type}");
         }
 
         readOutput += body[position];
@@ -114,8 +118,8 @@ public class BlockParser
             position++;
             if (IsEndOfBody(position))
             {
-                position--;
-                break; // Nothing to scan futher.
+                // That means the string was not closed. Futher scan is impossible.
+                throw new OpenStringException("End of the string was not found", start);
             }
             readOutput += body[position];
             if (body[position] == terminationSymbol) if (IsStringTerminator(position)) break;
@@ -141,7 +145,18 @@ public class BlockParser
                 position--;
                 break; // Nothing to scan futher.
             }
-            readOutput += body[position];
+            if (body[position] == '\'')
+            {
+                position = SkipString(position, ref readOutput, StringType.Char);
+            }
+            else if (body[position] == '"')
+            {
+                position = SkipString(position, ref readOutput, StringType.String);
+            }
+            else
+            {
+                readOutput += body[position];
+            }
 
             if (body[position] == '}') bracketBalance++;
             else if (body[position] == '{') bracketBalance--;

@@ -1,3 +1,4 @@
+using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
 namespace Syntaxer.Members;
@@ -32,10 +33,17 @@ public class ScriptFile : IMember
 
     public void SplitContent()
     {
-        members = parser.ParseBody();
-        foreach (var member in members) // Testing comment
+        try
         {
-            member.SplitContent();
+            members = parser.ParseBody();
+            foreach (var member in members) // Testing comment
+            {
+                member.SplitContent();
+            }
+        }
+        catch (OpenStringException e)
+        {
+            Console.WriteLine($"At {IndexToCoordinates(e.IndexOfOpening)}: {e.Message}");
         }
     }
 
