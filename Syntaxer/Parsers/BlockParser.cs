@@ -116,7 +116,7 @@ public class BlockParser
         {
             // Move position forward and write contents. Look for termination symbol.
             position++;
-            if (IsEndOfBody(position))
+            if (IsEndOfBody(position) || body[position] == '\n')
             {
                 // That means the string was not closed. Futher scan is impossible.
                 throw new OpenStringException("End of the string was not found", start);
