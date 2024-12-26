@@ -1,4 +1,6 @@
 
+using Syntaxer.Parsers;
+
 namespace Syntaxer.Members;
 
 /// <summary>
@@ -10,6 +12,7 @@ public class Instruction : IMember
     private IMember parent;
     private string body;
     private (int begin, int end) dimension;
+    private InstructionParser parser;
 
     public ScriptFile ParentFile => parentFile;
 
@@ -32,7 +35,8 @@ public class Instruction : IMember
                 break;
             }
         }
-        // Here will be created instruction parser.
+
+        // parser = new(body, dimension, this);
     }
 
     public void SplitContent()

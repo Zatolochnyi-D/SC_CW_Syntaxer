@@ -15,6 +15,7 @@ public class Block : IMember
     private (int begin, int end) identifierDimension;
     private (int begin, int end) bodyDimension;
     private BlockParser parser;
+    private InstructionParser identifierParser;
     private List<IMember> members = [];
 
     public ScriptFile ParentFile => parentFile;
@@ -83,6 +84,7 @@ public class Block : IMember
         bodyDimension = (wholeDimension.begin + indexOfOpenBracket + 1, wholeDimension.end - 1);
 
         parser = new(body, bodyDimension, this);
+        identifierParser = new(identifier, bodyDimension, this);
     }
 
     
