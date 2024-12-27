@@ -1,21 +1,23 @@
 namespace Syntaxer.Context;
 
-public enum TopLevelMemberType
+public enum MemberType
 {
+    File,
     Namespace,
     Class,
     Struct,
     Interface,
+    Delegate,
     Enum
 }
 
 public class Context
 {
-    private TopLevelMemberType memberType;
+    private MemberType memberType;
 
-    public TopLevelMemberType MemberType => memberType;
+    public MemberType MemberType => memberType;
 
-    public Context(TopLevelMemberType memberType)
+    public Context(MemberType memberType)
     {
         this.memberType = memberType;
     }
