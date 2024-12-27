@@ -17,6 +17,7 @@ public class ScriptFile : IMember
     private FileContext context;
 
     public ScriptFile ParentFile => this;
+    public GenericContext Context => context;
 
     public ScriptFile(string fileContent)
     {

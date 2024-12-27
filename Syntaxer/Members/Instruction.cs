@@ -1,4 +1,5 @@
 
+using Syntaxer.Context;
 using Syntaxer.Parsers;
 
 namespace Syntaxer.Members;
@@ -15,6 +16,7 @@ public class Instruction : IMember
     private InstructionParser parser;
 
     public ScriptFile ParentFile => parentFile;
+    public GenericContext Context => throw new NotImplementedException();
 
     public Instruction(string instructionContent, (int, int) dimension, IMember parent)
     {

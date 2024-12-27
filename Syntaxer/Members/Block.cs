@@ -1,3 +1,4 @@
+using Syntaxer.Context;
 using Syntaxer.Parsers;
 
 namespace Syntaxer.Members;
@@ -19,6 +20,7 @@ public class Block : IMember
     private List<IMember> members = [];
 
     public ScriptFile ParentFile => parentFile;
+    public GenericContext Context => throw new NotImplementedException();
 
     public Block(string blockContent, (int, int) dimension, IMember parent)
     {

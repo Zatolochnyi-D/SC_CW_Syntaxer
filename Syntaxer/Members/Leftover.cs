@@ -1,3 +1,5 @@
+using Syntaxer.Context;
+
 namespace Syntaxer.Members;
 
 /// <summary>
@@ -11,6 +13,7 @@ public class Leftover : IMember
     private (int begin, int end) dimension;
 
     public ScriptFile ParentFile => parentFile;
+    public GenericContext Context => throw new NotImplementedException();
 
     public Leftover(string leftoverContent, (int, int) dimension, IMember parent)
     {
