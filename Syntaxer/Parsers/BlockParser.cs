@@ -27,7 +27,7 @@ public class BlockParser
     /// </summary>
     /// <param name="position">Position of cursor, where opening symbol was found.</param>
     /// <returns>True, if it's a termination symbol and not string (char) content.</returns>
-    public bool IsStringTerminator(int position)
+    private bool IsStringTerminator(int position)
     {
         int i = 0; // Counter of amount of backslashes before possible terminator.
         while (true)
@@ -48,7 +48,7 @@ public class BlockParser
     /// </summary>
     /// <param name="position">Position of cursor.</param>
     /// <returns>True, if position is no longer inside of the body.</returns>
-    public bool IsEndOfBody(int position)
+    private bool IsEndOfBody(int position)
     {
         return position == body.Length;
     }
@@ -58,7 +58,7 @@ public class BlockParser
     /// </summary>
     /// <param name="position">Position of cursor.</param>
     /// <returns>True, if position leads to the last symbol of the body.</returns>
-    public bool IsLastSymbol(int position)
+    private bool IsLastSymbol(int position)
     {
         return position == body.Length - 1;
     }
@@ -69,7 +69,7 @@ public class BlockParser
     /// <param name="position">Position of cursor, where first / (slash) of comment found.</param>
     /// <param name="readOutput">String to where output empty space.</param>
     /// <returns>Position where comment ends or last symbol of the body.</returns>
-    public int SkipComment(int position, ref string readOutput)
+    private int SkipComment(int position, ref string readOutput)
     {
         readOutput += ' ';
         do
@@ -95,7 +95,7 @@ public class BlockParser
     /// <returns>Position where string end (string termionator or last symbol of the file).</returns>
     /// <exception cref="NotImplementedException">Throws exception if nes StringType is added but reaction on it is not implemented.</exception>
     /// <exception cref="OpenStringException">Happens when all body was scanned, but end of string was not found.</exception>
-    public int SkipString(int position, ref string readOutput, StringType type)
+    private int SkipString(int position, ref string readOutput, StringType type)
     {
         int start = position;
         char terminationSymbol;
@@ -133,7 +133,7 @@ public class BlockParser
     /// <param name="position">Cursor position where block open bracket is found.</param>
     /// <param name="readOutput">String to where block contents should be written.</param>
     /// <returns>Position where block closing bracket or last symbol of body was found.</returns>
-    public int SkipBlock(int position, ref string readOutput)
+    private int SkipBlock(int position, ref string readOutput)
     {
         readOutput += body[position];
         int bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
