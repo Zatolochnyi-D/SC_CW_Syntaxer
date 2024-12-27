@@ -1,6 +1,6 @@
 namespace Syntaxer.Context;
 
-public class FileContext : Context
+public class FileContext : GenericContext
 {
     private bool hasFileScopedNamespace = false;
 
