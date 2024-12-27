@@ -1,3 +1,4 @@
+using Syntaxer.Context;
 using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
@@ -13,6 +14,7 @@ public class ScriptFile : IMember
     private List<int> lineLengths = [];
     private List<IMember> members = [];
     private (int begin, int end) dimension;
+    private FileContext context;
 
     public ScriptFile ParentFile => this;
 
@@ -21,9 +23,10 @@ public class ScriptFile : IMember
         body = fileContent;
         dimension = (0, body.Length - 1); // First and last characters of the file.
         parser = new(body, dimension, this);
+        context = new(MemberType.File);
         SplitFileIntoLines();
         SplitContent();
-        Console.WriteLine(this);
+        // Console.WriteLine(this);
     }
 
     private void SplitFileIntoLines()
