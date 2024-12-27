@@ -2,6 +2,7 @@ namespace Syntaxer.Context;
 
 public enum MemberType
 {
+    Unknown,
     File,
     Namespace,
     Class,
