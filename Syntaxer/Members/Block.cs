@@ -18,9 +18,10 @@ public class Block : IMember
     private BlockParser parser;
     private InstructionParser identifierParser;
     private List<IMember> members = [];
+    private GenericContext context;
 
     public ScriptFile ParentFile => parentFile;
-    public GenericContext Context => throw new NotImplementedException();
+    public GenericContext Context => context;
 
     public Block(string blockContent, (int, int) dimension, IMember parent)
     {
@@ -87,6 +88,7 @@ public class Block : IMember
 
         parser = new(body, bodyDimension, this);
         identifierParser = new(identifier, bodyDimension, this);
+        context = identifierParser.ParseBody();
     }
 
     

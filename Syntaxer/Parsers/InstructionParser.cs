@@ -1,3 +1,4 @@
+using Syntaxer.Context;
 using Syntaxer.Members;
 
 namespace Syntaxer.Parsers;
@@ -17,7 +18,6 @@ public class InstructionParser
         cleanBody = new string(body.Where(x => !char.IsControl(x)).ToArray()); // Remove invisible characters.
         this.dimension = dimension;
         this.parent = parent;
-        ParseBody();
     }
 
     /// <summary>
@@ -56,12 +56,20 @@ public class InstructionParser
         return result;
     }
 
-    public void ParseBody()
+    public GenericContext ParseBody()
     {
         bodyElements = SplitBody();
+        GenericContext contextToReturn;
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
-            
+            // Look for errors.
+            NamespaceContext context = new(MemberType.Namespace);
+            contextToReturn = context;
         }
+        else
+        {
+            contextToReturn = new(MemberType.Unknown);
+        }
+        return contextToReturn;
     }
 }
