@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Syntaxer.Members;
 
 namespace Syntaxer.Parsers;
@@ -11,6 +10,7 @@ public class InstructionParser
     private (int begin, int end) dimension;
     private IMember parent;
 
+    // Content is given without ;
     public InstructionParser(string instructionContent, (int, int) dimension, IMember parent)
     {
         body = instructionContent;
@@ -59,5 +59,9 @@ public class InstructionParser
     public void ParseBody()
     {
         bodyElements = SplitBody();
+        if (bodyElements.Contains(Keywords.NAMESPACE))
+        {
+            
+        }
     }
 }
