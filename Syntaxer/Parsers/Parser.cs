@@ -78,6 +78,17 @@ public class Parser
     }
 
     /// <summary>
+    /// Skips comment without outputing empties for each comment character.
+    /// </summary>
+    /// <param name="position">Position where first / of comment was found.</param>
+    /// <returns>Position where comment ends.</returns>
+    protected int SilentSkipComment(int position)
+    {
+        string message = "";
+        return SkipComment(position, ref message);
+    }
+
+    /// <summary>
     /// Reads string or char until end of body or end of string (char) found. Writes all it read.
     /// </summary>
     /// <param name="position">Position of cursor, where opening symbol was found.</param>
