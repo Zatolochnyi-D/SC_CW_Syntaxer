@@ -12,7 +12,9 @@ public class Program
         // List<ScriptFile> scripts = fileContents.Select(x => new ScriptFile(x)).ToList();
         string data = File.ReadAllText("/Users/denis/Desktop/SC_CW_Syntaxer/Syntaxer/Members/ScriptFile.cs");
         ScriptFile file = new(data);
-        string data2 = File.ReadAllText("/Users/denis/Desktop/SC_things_testing/Testing/Program.cs");
+        file.SplitContent();
+        string data2 = File.ReadAllText("/Users/denis/Desktop/SC_things_testing/Testing/Strings.cs");
         ScriptFile file2 = new(data2);
+        file2.SplitContent();
     }
 }
