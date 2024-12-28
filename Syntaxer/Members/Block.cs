@@ -22,7 +22,7 @@ public class Block : IMember
 
     public List<SyntaxException> Exceptions => throw new NotImplementedException();
 
-    public Block(string blockContent, (int, int) dimension, IMember parent)
+    public Block(string blockContent, (int, int) dimension, IMember parent, int bracketBalance)
     {
         this.parent = parent;
         parentFile = parent.ParentFile;
@@ -53,6 +53,13 @@ public class Block : IMember
             body = body[..^1];
         }
         else
+        {
+            exceptions.Add(new OpenBlockException(wholeDimension.begin + indexOfOpenBracket));
+            return;
+        }
+
+        // Check if bracket balance of this block is 0 (balanced). If not - exception.
+        if (bracketBalance != 0)
         {
             exceptions.Add(new OpenBlockException(wholeDimension.begin + indexOfOpenBracket));
             return;

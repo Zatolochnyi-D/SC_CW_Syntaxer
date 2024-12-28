@@ -70,7 +70,7 @@ public class BlockParser : Parser
                 // Start of block found.
                 i = SkipBlock(i, ref member, out int bracketBalance); // This i either position of "}" or last symbol of the file.
                 int end = dimension.begin + i;
-                members.Add(new Block(member, (start, end), parent));
+                members.Add(new Block(member, (start, end), parent, bracketBalance));
                 start = dimension.begin + i + 1;
                 member = "";
                 continue;
