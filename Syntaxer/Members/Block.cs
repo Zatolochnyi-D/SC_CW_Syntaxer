@@ -1,4 +1,5 @@
 using Syntaxer.Context;
+using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
 namespace Syntaxer.Members;
@@ -22,6 +23,8 @@ public class Block : IMember
 
     public ScriptFile ParentFile => parentFile;
     public GenericContext Context => context;
+
+    public List<SyntaxException> Exceptions => throw new NotImplementedException();
 
     public Block(string blockContent, (int, int) dimension, IMember parent)
     {

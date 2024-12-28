@@ -1,4 +1,5 @@
 using Syntaxer.Context;
+using Syntaxer.Exceptions;
 
 namespace Syntaxer.Members;
 
@@ -14,6 +15,8 @@ public class Leftover : IMember
 
     public ScriptFile ParentFile => parentFile;
     public GenericContext Context => throw new NotImplementedException();
+
+    public List<SyntaxException> Exceptions => throw new NotImplementedException();
 
     public Leftover(string leftoverContent, (int, int) dimension, IMember parent)
     {

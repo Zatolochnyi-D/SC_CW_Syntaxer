@@ -1,5 +1,6 @@
 
 using Syntaxer.Context;
+using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
 namespace Syntaxer.Members;
@@ -17,6 +18,8 @@ public class Instruction : IMember
 
     public ScriptFile ParentFile => parentFile;
     public GenericContext Context => throw new NotImplementedException();
+
+    public List<SyntaxException> Exceptions => throw new NotImplementedException();
 
     public Instruction(string instructionContent, (int, int) dimension, IMember parent)
     {

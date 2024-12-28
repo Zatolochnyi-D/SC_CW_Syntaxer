@@ -16,9 +16,9 @@ public class ScriptFile : IMember
     private FileContext context;
     private (int begin, int end) dimension;
 
-
     public ScriptFile ParentFile => this;
     public GenericContext Context => context;
+    public List<SyntaxException> Exceptions => exceptions;
 
     public ScriptFile(string fileContent)
     {
@@ -50,6 +50,17 @@ public class ScriptFile : IMember
         {
             member.SplitContent();
         }
+    }
+
+    public List<string> ExceptionsAsStrings()
+    {
+        List<string> result = [];
+        foreach (var exception in exceptions)
+        {
+            (int line, int column) coords = IndexToCoordinates(exception.Index);
+            result.Add($"At line: {coords.line}, column: {coords.column}:    {exception.Message}");
+        }
+        return result;
     }
 
     public (int line, int column) IndexToCoordinates(int index)
