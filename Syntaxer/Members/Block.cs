@@ -1,4 +1,3 @@
-using Syntaxer.Context;
 using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
@@ -12,14 +11,11 @@ public class Block : IMember
     private ScriptFile parentFile;
     private IMember parent;
     private string identifier; // part before "{" that holds info about block.
-    private string body; // part after "{" that holds info inside the block.
+    private string? body = null; // part after "{" that holds info inside the block. If body is null - open bracket exception happened.
     private List<SyntaxException> exceptions = [];
-
     private (int begin, int end) wholeDimension;
     private (int begin, int end) identifierDimension;
     private (int begin, int end) bodyDimension;
-    private BlockParser parser;
-    private InstructionParser identifierParser;
     private List<IMember> members = [];
 
     public ScriptFile ParentFile => parentFile;
@@ -30,6 +26,7 @@ public class Block : IMember
     {
         this.parent = parent;
         parentFile = parent.ParentFile;
+        wholeDimension = dimension;
 
         // blockContent always have "{", as it is a block defining symbol.
         // By identifying position of first "{", we can split content to identifier and block body.
@@ -44,7 +41,8 @@ public class Block : IMember
         {
             // If there are no symbols after "{", throw an error and stop futher scan (there is no guarantee of identifying more errors correctly).
             // "Block is defined, by is not closed."
-            throw new Exception(); // placeholder
+            exceptions.Add(new OpenBlockException(wholeDimension.begin + indexOfOpenBracket));
+            return;
         }
 
         // Block ends either by "}" or end of the line. If first, removing "}" from body ensures we have clean block body for scanning.
@@ -56,14 +54,12 @@ public class Block : IMember
         }
         else
         {
-            throw new Exception(); // placeholder
+            exceptions.Add(new OpenBlockException(wholeDimension.begin + indexOfOpenBracket));
+            return;
         }
 
         // For the next step we need to properly identify begin and end for both identifier and body.
-        // Given dimension begin is the next symbol after previous instruction/block.
-        // End is the position of last "}" (considering we excluded cases when "}" is missing before).
-
-        wholeDimension = dimension;
+        // Given dimension begin is the next symbol after previous instruction/block. End is the position of last "}".
 
         // Begin of identifier is first non-empty character after dimension.begin. End of identifier is first non-empty character before "{"
         identifierDimension = (wholeDimension.begin, wholeDimension.begin + indexOfOpenBracket - 1);
@@ -88,20 +84,24 @@ public class Block : IMember
         // Begin of body is first character after "{". End of body is first character before "}".
         // (Considering we excluded cases when there is nothing after "{" and there is not an "}" in the end).
         bodyDimension = (wholeDimension.begin + indexOfOpenBracket + 1, wholeDimension.end - 1);
-
-        parser = new(body, bodyDimension, this);
-        identifierParser = new(identifier, bodyDimension, this);
-        // context = identifierParser.ParseBody();
     }
 
     public void SplitContent()
     {
-        parser.ParseBody();
-        members = parser.Members;
-        foreach (var member in members)
+        if (body == null)
         {
-            member.SplitContent();
+            // Open Bracket Exception.
+            return;
         }
+        // Scan identifier first.
+        var identifierParser = new InstructionParser(identifier, identifierDimension, this);
+        identifierParser.ParseBody();
+        var bodyParser = new BlockParser(body, bodyDimension, this);
+        bodyParser.ParseBody();
+        // foreach (var member in members)
+        // {
+        //     member.SplitContent();
+        // }
     }
 
     public override string ToString()
