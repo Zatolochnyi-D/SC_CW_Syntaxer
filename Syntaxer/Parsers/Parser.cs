@@ -96,7 +96,6 @@ public abstract class Parser
     /// <param name="type">Is it string or char.</param>
     /// <returns>Position where string end (string termionator or last symbol of the file).</returns>
     /// <exception cref="NotImplementedException">Throws exception if nes StringType is added but reaction on it is not implemented.</exception>
-    /// <exception cref="OpenStringException">Happens when all body was scanned, but end of string was not found.</exception>
     protected virtual int SkipString(int position, ref string readOutput, StringType type)
     {
         char terminationSymbol;
