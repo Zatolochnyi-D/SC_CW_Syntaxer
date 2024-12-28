@@ -47,7 +47,7 @@ public class ScriptFile : IMember
         }
         catch (OpenStringException e)
         {
-            Console.WriteLine($"At {IndexToCoordinates(e.IndexOfOpening)}: {e.Message}");
+            Console.WriteLine($"At {IndexToCoordinates(e.Index)}: {e.Message}");
         }
     }
 

@@ -119,7 +119,7 @@ public class BlockParser
             if (IsEndOfBody(position) || body[position] == '\n')
             {
                 // That means the string was not closed. Futher scan is impossible.
-                throw new OpenStringException("End of the string was not found", start);
+                throw new OpenStringException(start, "End of the string was not found");
             }
             readOutput += body[position];
             if (body[position] == terminationSymbol) if (IsStringTerminator(position)) break;
