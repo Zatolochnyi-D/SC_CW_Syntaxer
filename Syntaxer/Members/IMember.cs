@@ -8,4 +8,5 @@ public interface IMember
     public List<SyntaxException> Exceptions { get; }
 
     public void SplitContent();
+    public List<SyntaxException> CollectExceptions();
 }

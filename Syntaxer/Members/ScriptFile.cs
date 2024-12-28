@@ -1,4 +1,3 @@
-using Syntaxer.Context;
 using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
@@ -50,10 +49,18 @@ public class ScriptFile : IMember
         }
     }
 
+    public List<SyntaxException> CollectExceptions()
+    {
+        List<SyntaxException> result = [];
+        result.AddRange(exceptions);
+        result.AddRange(members.SelectMany(x => x.CollectExceptions()));
+        return result;
+    }
+
     public List<string> ExceptionsAsStrings()
     {
         List<string> result = [];
-        foreach (var exception in exceptions)
+        foreach (var exception in CollectExceptions())
         {
             (int line, int column) coords = IndexToCoordinates(exception.Index);
             result.Add($"At line: {coords.line}, column: {coords.column}:    {exception.Message}");

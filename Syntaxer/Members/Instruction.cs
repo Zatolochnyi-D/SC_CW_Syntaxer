@@ -58,4 +58,9 @@ public class Instruction : IMember
         result += body.Replace('\n', '\0').Trim();
         return result;
     }
+
+    public List<SyntaxException> CollectExceptions()
+    {
+        return [];
+    }
 }

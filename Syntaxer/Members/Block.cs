@@ -104,6 +104,14 @@ public class Block : IMember
         // }
     }
 
+    public List<SyntaxException> CollectExceptions()
+    {
+        List<SyntaxException> result = [];
+        result.AddRange(exceptions);
+        result.AddRange(members.SelectMany(x => x.CollectExceptions()));
+        return result;
+    }
+
     public override string ToString()
     {
         string result = "";
