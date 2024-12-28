@@ -36,6 +36,7 @@ public class StringParser : Parser
 
         string stringBody = "";
         stringBody += Body[position];
+        bool hasNonCritError = false;
         while (true)
         {
             // Move position forward and write contents. Look for termination symbol.
@@ -48,14 +49,18 @@ public class StringParser : Parser
             }
             else if (Body[position] == '\\' && Body[position + 1] == ' ')
             {
+                hasNonCritError = true;
                 foundExceptions.Add(new EmptyEscapeSequenceException(start));
             }
             stringBody += Body[position];
             if (Body[position] == terminationSymbol)
             if (IsStringTerminator(position))
             {
-                // If string found it's end successfully (otherwise this part will never run), create string literal.
-                foundCorrectStrings.Add(new(stringBody, (start, position)));
+                if (!hasNonCritError)
+                {
+                        // If string found it's end successfully (otherwise this part will never run), create string literal.
+                        foundCorrectStrings.Add(new(stringBody, (start, position)));
+                }
                 break;
             }
         }
