@@ -1,28 +1,22 @@
 using Syntaxer.Enumerations;
 using Syntaxer.Exceptions;
 using Syntaxer.Literals;
-using Syntaxer.Members;
-using Syntaxer.Parsers;
 
-namespace Syntaxer.Validators;
+namespace Syntaxer.Parsers;
 
 /// <summary>
 /// Class responsible for identifying erroneous strings if file.
 /// Collects correct strings and errors for incorrect strings.
 /// </summary>
-public class StringValidator : Parser
+public class StringParser : Parser
 {
-    private ScriptFile parent;
     private List<SyntaxException> foundExceptions = [];
     private List<StringLiteral> foundCorrectStrings = [];
 
     public List<SyntaxException> FoundExceptions => foundExceptions;
     public List<StringLiteral> FoundCorrectStrings => foundCorrectStrings;
 
-    public StringValidator(string fileContent, ScriptFile parent) : base(fileContent)
-    {
-        this.parent = parent;
-    }
+    public StringParser(string fileContent) : base(fileContent) { }
 
     private int SkipString(int position, StringType type)
     {
@@ -68,7 +62,7 @@ public class StringValidator : Parser
         return position;
     }
 
-    public void Validate()
+    public void ParseBody()
     {
         for (int i = 0; i < Body.Length; i++)
         {
