@@ -46,7 +46,7 @@ public class StringParser : Parser
                 foundExceptions.Add(new OpenStringException(start));
                 break;
             }
-            else if (Body[position] == '\\')
+            else if (Body[position] == '\\' && Body[position + 1] == ' ')
             {
                 foundExceptions.Add(new EmptyEscapeSequenceException(start));
             }
