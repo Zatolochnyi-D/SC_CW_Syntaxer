@@ -68,7 +68,7 @@ public class BlockParser : Parser
             else if (Body[i] == '{')
             {
                 // Start of block found.
-                i = SkipBlock(i, ref member); // This i either position of "}" or last symbol of the file.
+                i = SkipBlock(i, ref member, out int bracketBalance); // This i either position of "}" or last symbol of the file.
                 int end = dimension.begin + i;
                 members.Add(new Block(member, (start, end), parent));
                 start = dimension.begin + i + 1;

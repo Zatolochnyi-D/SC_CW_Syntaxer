@@ -129,10 +129,10 @@ public abstract class Parser
     /// <param name="position">Cursor position where block open bracket is found.</param>
     /// <param name="readOutput">String to where block contents should be written.</param>
     /// <returns>Position where block closing bracket or last symbol of body was found.</returns>
-    protected virtual int SkipBlock(int position, ref string readOutput)
+    protected virtual int SkipBlock(int position, ref string readOutput, out int bracketBalance)
     {
         readOutput += Body[position];
-        int bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
+        bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
         while (true)
         {
             position++;
