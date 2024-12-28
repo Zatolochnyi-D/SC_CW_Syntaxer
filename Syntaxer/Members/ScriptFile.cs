@@ -13,18 +13,15 @@ public class ScriptFile : IMember
     private List<int> lineLengths = [];
     private List<SyntaxException> exceptions = [];
     private List<IMember> members = [];
-    private FileContext context;
     private (int begin, int end) dimension;
 
     public ScriptFile ParentFile => this;
-    public GenericContext Context => context;
     public List<SyntaxException> Exceptions => exceptions;
 
     public ScriptFile(string fileContent)
     {
         body = fileContent;
         dimension = (0, body.Length - 1);
-        context = new(MemberType.File);
         SplitFileIntoLines();
     }
 

@@ -5,7 +5,7 @@ using Syntaxer.Parsers;
 namespace Syntaxer.Members;
 
 /// <summary>
-/// Used to store any separate block.
+/// Stores blocks identifying sequence and contents. Responsible for it's scanning.
 /// </summary>
 public class Block : IMember
 {
@@ -13,16 +13,16 @@ public class Block : IMember
     private IMember parent;
     private string identifier; // part before "{" that holds info about block.
     private string body; // part after "{" that holds info inside the block.
+    private List<SyntaxException> exceptions = [];
+
     private (int begin, int end) wholeDimension;
     private (int begin, int end) identifierDimension;
     private (int begin, int end) bodyDimension;
     private BlockParser parser;
     private InstructionParser identifierParser;
     private List<IMember> members = [];
-    private GenericContext context;
 
     public ScriptFile ParentFile => parentFile;
-    public GenericContext Context => context;
 
     public List<SyntaxException> Exceptions => throw new NotImplementedException();
 
@@ -31,7 +31,7 @@ public class Block : IMember
         this.parent = parent;
         parentFile = parent.ParentFile;
 
-        // blockContent always have "{", as it is a block defining symbol. If there are several "{" symbols. First one is what we need.
+        // blockContent always have "{", as it is a block defining symbol.
         // By identifying position of first "{", we can split content to identifier and block body.
         int indexOfOpenBracket = blockContent.IndexOf('{');
         identifier = blockContent[..indexOfOpenBracket];
@@ -91,7 +91,7 @@ public class Block : IMember
 
         parser = new(body, bodyDimension, this);
         identifierParser = new(identifier, bodyDimension, this);
-        context = identifierParser.ParseBody();
+        // context = identifierParser.ParseBody();
     }
 
     public void SplitContent()
