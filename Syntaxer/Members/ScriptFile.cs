@@ -5,7 +5,7 @@ using Syntaxer.Parsers;
 namespace Syntaxer.Members;
 
 /// <summary>
-/// Stores content of individual file.
+/// Class responsible for storing contents of one file. Works with it's members and is a way fo members to communicate with each other.
 /// </summary>
 public class ScriptFile : IMember
 {

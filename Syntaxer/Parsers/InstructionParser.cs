@@ -45,6 +45,10 @@ public class InstructionParser
         return words;
     }
 
+    /// <summary>
+    /// Split line into separate words or symbols for futher analysis.
+    /// </summary>
+    /// <returns>List of words and symbols.</returns>
     private List<string> SplitBody()
     {
         IEnumerable<string> splitResult = cleanBody.Split(" ", StringSplitOptions.RemoveEmptyEntries);
