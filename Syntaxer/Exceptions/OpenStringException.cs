@@ -1,6 +1,6 @@
 namespace Syntaxer.Exceptions;
 
-public class OpenStringException : ParserException
+public class OpenStringException : SyntaxException
 {
     private int indexOfOpening;
 
