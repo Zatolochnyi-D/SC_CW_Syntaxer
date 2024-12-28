@@ -94,11 +94,10 @@ public class Block : IMember
         context = identifierParser.ParseBody();
     }
 
-    
-
     public void SplitContent()
     {
-        members = parser.ParseBody();
+        parser.ParseBody();
+        members = parser.Members;
         foreach (var member in members)
         {
             member.SplitContent();

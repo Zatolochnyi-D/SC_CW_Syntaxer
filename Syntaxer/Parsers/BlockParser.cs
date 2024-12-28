@@ -7,6 +7,9 @@ public class BlockParser : Parser
 {
     private IMember parent;
     private (int begin, int end) dimension;
+    private List<IMember> members = [];
+
+    public List<IMember> Members => members;
 
     public BlockParser(string body, (int, int) dimension, IMember parent) : base(body)
     {
@@ -14,11 +17,10 @@ public class BlockParser : Parser
         this.parent = parent;
     }
 
-    public List<IMember> ParseBody()
+    public void ParseBody()
     {
         string member = "";
         int start = dimension.begin;
-        List<IMember> members = [];
 
         for (int i = 0; i < Body.Length; i++)
         {
@@ -81,6 +83,5 @@ public class BlockParser : Parser
             // Do not create leftover if string is empty actually.
             members.Add(new Leftover(member, (start, dimension.begin + Body.Length - 1), parent));
         }
-        return members;
     }
 }

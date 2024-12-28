@@ -45,7 +45,8 @@ public class ScriptFile : IMember
         }
 
         var blockParser = new BlockParser(body, dimension, this);
-        members = blockParser.ParseBody();
+        blockParser.ParseBody();
+        members = blockParser.Members;
         foreach (var member in members)
         {
             member.SplitContent();
