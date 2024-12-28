@@ -10,11 +10,12 @@ namespace Syntaxer.Members;
 public class ScriptFile : IMember
 {
     private string body;
-    private BlockParser parser;
     private List<int> lineLengths = [];
+    private List<SyntaxException> exceptions = [];
     private List<IMember> members = [];
-    private (int begin, int end) dimension;
     private FileContext context;
+    private (int begin, int end) dimension;
+
 
     public ScriptFile ParentFile => this;
     public GenericContext Context => context;
@@ -22,12 +23,9 @@ public class ScriptFile : IMember
     public ScriptFile(string fileContent)
     {
         body = fileContent;
-        dimension = (0, body.Length - 1); // First and last characters of the file.
-        parser = new(body, dimension, this);
+        dimension = (0, body.Length - 1);
         context = new(MemberType.File);
         SplitFileIntoLines();
-        SplitContent();
-        // Console.WriteLine(this);
     }
 
     private void SplitFileIntoLines()
@@ -37,17 +35,20 @@ public class ScriptFile : IMember
 
     public void SplitContent()
     {
-        try
+        var stringParser = new StringParser(body);
+        stringParser.ParseBody();
+        exceptions.AddRange(stringParser.FoundExceptions);
+        if (stringParser.FoundExceptions.Select(x => x is OpenStringException).Count() != 0)
         {
-            members = parser.ParseBody();
-            foreach (var member in members)
-            {
-                member.SplitContent();
-            }
+            // There are open string errors, so futher scan should be stopped.
+            return;
         }
-        catch (OpenStringException e)
+
+        var blockParser = new BlockParser(body, dimension, this);
+        members = blockParser.ParseBody();
+        foreach (var member in members)
         {
-            Console.WriteLine($"At {IndexToCoordinates(e.Index)}: {e.Message}");
+            member.SplitContent();
         }
     }
 
