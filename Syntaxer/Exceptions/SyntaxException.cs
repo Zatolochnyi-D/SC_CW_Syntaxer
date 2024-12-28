@@ -2,5 +2,12 @@ namespace Syntaxer.Exceptions;
 
 public class SyntaxException : Exception
 {
-    public SyntaxException(string message) : base(message) { }
+    private int index;
+
+    public int Index => index;
+
+    public SyntaxException(int index, string message) : base(message)
+    {
+        this.index = index;
+    }
 }
