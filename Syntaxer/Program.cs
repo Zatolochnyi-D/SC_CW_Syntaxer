@@ -13,6 +13,7 @@ public class Program
         List<string> filePathes =
         [
             "/Users/denis/Desktop/SC_things_testing/Testing/Strings.cs",
+            "/Users/denis/Desktop/SC_things_testing/Testing/Blocks.cs",
             "/Users/denis/Desktop/SC_CW_Syntaxer/Syntaxer/Members/ScriptFile.cs",
         ];
 
