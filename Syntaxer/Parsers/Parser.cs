@@ -4,7 +4,7 @@ using Syntaxer.Members;
 
 namespace Syntaxer.Parsers;
 
-public class Parser
+public abstract class Parser
 {
     protected string Body;
 
@@ -18,7 +18,7 @@ public class Parser
     /// </summary>
     /// <param name="position">Position of cursor, where opening symbol was found.</param>
     /// <returns>True, if it's a termination symbol and not string (char) content.</returns>
-    protected bool IsStringTerminator(int position)
+    protected virtual bool IsStringTerminator(int position)
     {
         int i = 0; // Counter of amount of backslashes before possible terminator.
         while (true)
@@ -39,7 +39,7 @@ public class Parser
     /// </summary>
     /// <param name="position">Position of cursor.</param>
     /// <returns>True, if position is no longer inside of the body.</returns>
-    protected bool IsEndOfBody(int position)
+    protected virtual bool IsEndOfBody(int position)
     {
         return position == Body.Length;
     }
@@ -49,7 +49,7 @@ public class Parser
     /// </summary>
     /// <param name="position">Position of cursor.</param>
     /// <returns>True, if position leads to the last symbol of the body.</returns>
-    protected bool IsLastSymbol(int position)
+    protected virtual bool IsLastSymbol(int position)
     {
         return position == Body.Length - 1;
     }
@@ -60,7 +60,7 @@ public class Parser
     /// <param name="position">Position of cursor, where first / (slash) of comment found.</param>
     /// <param name="readOutput">String to where output empty space.</param>
     /// <returns>Position where comment ends or last symbol of the body.</returns>
-    protected int SkipComment(int position, ref string readOutput)
+    protected virtual int SkipComment(int position, ref string readOutput)
     {
         readOutput += ' ';
         do
@@ -82,7 +82,7 @@ public class Parser
     /// </summary>
     /// <param name="position">Position where first / of comment was found.</param>
     /// <returns>Position where comment ends.</returns>
-    protected int SilentSkipComment(int position)
+    protected virtual int SilentSkipComment(int position)
     {
         string message = "";
         return SkipComment(position, ref message);
@@ -97,9 +97,8 @@ public class Parser
     /// <returns>Position where string end (string termionator or last symbol of the file).</returns>
     /// <exception cref="NotImplementedException">Throws exception if nes StringType is added but reaction on it is not implemented.</exception>
     /// <exception cref="OpenStringException">Happens when all body was scanned, but end of string was not found.</exception>
-    protected int SkipString(int position, ref string readOutput, StringType type)
+    protected virtual int SkipString(int position, ref string readOutput, StringType type)
     {
-        int start = position;
         char terminationSymbol;
         switch (type)
         {
@@ -118,11 +117,7 @@ public class Parser
         {
             // Move position forward and write contents. Look for termination symbol.
             position++;
-            if (IsEndOfBody(position) || Body[position] == '\n')
-            {
-                // That means the string was not closed. Futher scan is impossible.
-                throw new OpenStringException(start);
-            }
+            // Do not perform checks for end of file or line, as string correctness is checked before parsing.
             readOutput += Body[position];
             if (Body[position] == terminationSymbol) if (IsStringTerminator(position)) break;
         }
@@ -135,7 +130,7 @@ public class Parser
     /// <param name="position">Cursor position where block open bracket is found.</param>
     /// <param name="readOutput">String to where block contents should be written.</param>
     /// <returns>Position where block closing bracket or last symbol of body was found.</returns>
-    protected int SkipBlock(int position, ref string readOutput)
+    protected virtual int SkipBlock(int position, ref string readOutput)
     {
         readOutput += Body[position];
         int bracketBalance = -1; // "{" counts as -1 and "}" as +1. That means "{ }" forms 0 together
