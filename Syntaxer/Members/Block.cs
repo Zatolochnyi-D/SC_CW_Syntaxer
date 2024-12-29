@@ -1,3 +1,4 @@
+using Syntaxer.Context;
 using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
@@ -17,11 +18,12 @@ public class Block : IMember
     private (int begin, int end) identifierDimension;
     private (int begin, int end) bodyDimension;
     private List<IMember> members = [];
+    private GenericContext context;
 
     public ScriptFile ParentFile => parentFile;
     public IMember Parent => parent;
     public List<SyntaxException> Exceptions => throw new NotImplementedException();
-
+    public GenericContext Context => throw new NotImplementedException();
 
     public Block(string blockContent, (int, int) dimension, IMember parent, int bracketBalance)
     {
@@ -105,12 +107,12 @@ public class Block : IMember
         var identifierParser = new InstructionParser(identifier, identifierDimension, this);
         identifierParser.ParseBody();
         var bodyParser = new BlockParser(body, bodyDimension, this);
-        bodyParser.ParseBody();
-        members = bodyParser.Members;
-        foreach (var member in members)
-        {
-            member.SplitContent();
-        }
+        // bodyParser.ParseBody();
+        // members = bodyParser.Members;
+        // foreach (var member in members)
+        // {
+        //     member.SplitContent();
+        // }
     }
 
     public List<SyntaxException> CollectExceptions()

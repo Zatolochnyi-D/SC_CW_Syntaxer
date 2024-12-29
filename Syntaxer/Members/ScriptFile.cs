@@ -1,3 +1,4 @@
+using Syntaxer.Context;
 using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
@@ -13,17 +14,19 @@ public class ScriptFile : IMember
     private List<SyntaxException> exceptions = [];
     private List<IMember> members = [];
     private (int begin, int end) dimension;
+    private FileContext context;
 
     public ScriptFile ParentFile => this;
     public IMember Parent => this;
     public List<SyntaxException> Exceptions => exceptions;
-
+    public GenericContext Context => context;
 
     public ScriptFile(string fileContent)
     {
         body = fileContent;
         dimension = (0, body.Length - 1);
         SplitFileIntoLines();
+        context = new(MemberType.File);
     }
 
     private void SplitFileIntoLines()
