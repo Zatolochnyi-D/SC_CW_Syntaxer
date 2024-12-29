@@ -17,9 +17,10 @@ public class Instruction : IMember
     private InstructionParser parser;
 
     public ScriptFile ParentFile => parentFile;
+    public IMember Parent => parent;
+    public List<SyntaxException> Exceptions => throw new NotImplementedException();
     public GenericContext Context => throw new NotImplementedException();
 
-    public List<SyntaxException> Exceptions => throw new NotImplementedException();
 
     public Instruction(string instructionContent, (int, int) dimension, IMember parent)
     {

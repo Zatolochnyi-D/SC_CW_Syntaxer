@@ -19,8 +19,9 @@ public class Block : IMember
     private List<IMember> members = [];
 
     public ScriptFile ParentFile => parentFile;
-
+    public IMember Parent => parent;
     public List<SyntaxException> Exceptions => throw new NotImplementedException();
+
 
     public Block(string blockContent, (int, int) dimension, IMember parent, int bracketBalance)
     {
@@ -105,10 +106,11 @@ public class Block : IMember
         identifierParser.ParseBody();
         var bodyParser = new BlockParser(body, bodyDimension, this);
         bodyParser.ParseBody();
-        // foreach (var member in members)
-        // {
-        //     member.SplitContent();
-        // }
+        members = bodyParser.Members;
+        foreach (var member in members)
+        {
+            member.SplitContent();
+        }
     }
 
     public List<SyntaxException> CollectExceptions()

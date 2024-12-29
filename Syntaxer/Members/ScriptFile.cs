@@ -15,7 +15,9 @@ public class ScriptFile : IMember
     private (int begin, int end) dimension;
 
     public ScriptFile ParentFile => this;
+    public IMember Parent => this;
     public List<SyntaxException> Exceptions => exceptions;
+
 
     public ScriptFile(string fileContent)
     {
