@@ -101,7 +101,7 @@ public class InstructionParser
         {
             // There is no name provided.
             // Throw an error.
-            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.ANY_NAME_DECLARED_MESSAGE));
+            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.NO_NAME_DECLARED_MESSAGE));
             return;
         }
 
