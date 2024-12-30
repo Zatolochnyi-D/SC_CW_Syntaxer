@@ -77,6 +77,16 @@ public class InstructionParser
 
     private void HandleNamespaceChecks()
     {
+        IEnumerable<string> operators = bodyElements.Where(x => Keywords.OPERATORS.Contains(x));
+        if (operators.Count() != 0)
+        {
+            // One or more words are operators.
+            foreach (var op in operators)
+            {
+                exceptions.Add(new OperatorMisusageException(dimension.begin, OperatorMisusageException.GetMisplacedOperatorMessage(op)));
+            }
+            return;
+        }
         // This body is a namespace.
         if (bodyElements.Count(x => x == Keywords.NAMESPACE) != 1)
         {
