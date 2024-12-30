@@ -106,6 +106,7 @@ public class Block : IMember
         // Scan identifier first.
         var identifierParser = new InstructionParser(identifier, identifierDimension, this);
         identifierParser.ParseBody();
+        exceptions.AddRange(identifierParser.Exceptions);
         var bodyParser = new BlockParser(body, bodyDimension, this);
         // bodyParser.ParseBody();
         // members = bodyParser.Members;
