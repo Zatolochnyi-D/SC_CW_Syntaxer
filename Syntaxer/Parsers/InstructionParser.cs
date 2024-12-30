@@ -143,7 +143,7 @@ public class InstructionParser
         }
     }
 
-    public void ParseBody()
+    public GenericContext ParseBody()
     {
         bodyElements = SplitBody();
         GenericContext contextToReturn;
@@ -156,5 +156,6 @@ public class InstructionParser
         {
             contextToReturn = new(MemberType.Unknown);
         }
+        return contextToReturn;
     }
 }

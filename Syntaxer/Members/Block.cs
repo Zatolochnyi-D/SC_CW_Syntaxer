@@ -22,8 +22,8 @@ public class Block : IMember
 
     public ScriptFile ParentFile => parentFile;
     public IMember Parent => parent;
-    public List<SyntaxException> Exceptions => throw new NotImplementedException();
-    public GenericContext Context => throw new NotImplementedException();
+    public List<SyntaxException> Exceptions => exceptions;
+    public GenericContext Context => context;
 
     public Block(string blockContent, (int, int) dimension, IMember parent, int bracketBalance)
     {
@@ -105,15 +105,15 @@ public class Block : IMember
         }
         // Scan identifier first.
         var identifierParser = new InstructionParser(identifier, identifierDimension, this);
-        identifierParser.ParseBody();
+        context = identifierParser.ParseBody();
         exceptions.AddRange(identifierParser.Exceptions);
         var bodyParser = new BlockParser(body, bodyDimension, this);
-        // bodyParser.ParseBody();
-        // members = bodyParser.Members;
-        // foreach (var member in members)
-        // {
-        //     member.SplitContent();
-        // }
+        bodyParser.ParseBody();
+        members = bodyParser.Members;
+        foreach (var member in members)
+        {
+            member.SplitContent();
+        }
     }
 
     public List<SyntaxException> CollectExceptions()
