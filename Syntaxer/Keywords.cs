@@ -49,6 +49,11 @@ public static class Keywords
         "++",
         "--",
         "=>",
-        .. ACCESS_OPERATORS
+    ];
+
+    public static readonly string[] ALL_OPERATORS =
+    [
+        .. OPERATORS,
+        .. ACCESS_OPERATORS,
     ];
 }
