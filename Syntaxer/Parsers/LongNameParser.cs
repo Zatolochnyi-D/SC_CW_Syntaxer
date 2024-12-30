@@ -10,9 +10,6 @@ public class LongNameParser
 {
     private List<string> body;
     private (int begin, int end) dimension;
-    private List<SyntaxException> exceptions = [];
-
-    public List<SyntaxException> Exceptions => exceptions;
 
     public LongNameParser(List<string> expectedName, (int, int) dimension)
     {
@@ -34,7 +31,10 @@ public class LongNameParser
                     // There is nothing on left or there is other dot, take it as empty.
                     left = "";
                 }
-                else left = body[leftIndex];
+                else
+                {
+                    left = body[leftIndex];
+                }
 
                 int rightIndex = i + 1;
                 string right;
@@ -43,31 +43,56 @@ public class LongNameParser
                     // There is nothing on right or there is other dot.
                     right = "";
                 }
-                else right = body[rightIndex];
+                else
+                {
+                    right = body[rightIndex];
+                }
                 operations.Enqueue(new AccessOperation(left, right));
             }
         }
 
         List<AccessOperation> mergedOperations = [];
-        AccessOperation currentOperation = operations.Dequeue();
-        while (true)
+        // When body consists of separate words, without dots, queue will be empty.
+        if (operations.Count != 0)
         {
-            for (int i = 0; i < operations.Count; i++)
+            AccessOperation currentOperation = operations.Dequeue();
+            while (true)
             {
-                AccessOperation nextOperation = operations.Dequeue();
-                var result = currentOperation.TryMerge(nextOperation);
-                if (result == null)
+                for (int i = 0; i < operations.Count; i++)
+                {
+                    AccessOperation nextOperation = operations.Dequeue();
+                    var result = currentOperation.TryMerge(nextOperation);
+                    if (result == null)
+                    {
+                        mergedOperations.Add(currentOperation);
+                        currentOperation = nextOperation;
+                        break;
+                    }
+                    else currentOperation = result;
+                }
+                if (operations.Count == 0)
                 {
                     mergedOperations.Add(currentOperation);
-                    currentOperation = nextOperation;
                     break;
                 }
-                else currentOperation = result;
             }
-            if (operations.Count == 0)
+        }
+
+        List<int> usedIndexes = [];
+        for (int i = 0; i < body.Count; i++)
+        {
+            if (body[i] == ".")
             {
-                mergedOperations.Add(currentOperation);
-                break;
+                usedIndexes.Add(i - 1);
+                usedIndexes.Add(i);
+                usedIndexes.Add(i + 1);
+            }
+        }
+        for (int i = 0; i < body.Count; i++)
+        {
+            if (!usedIndexes.Contains(i))
+            {
+                mergedOperations.Add(new(body[i]));
             }
         }
 
