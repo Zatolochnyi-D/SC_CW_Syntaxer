@@ -6,7 +6,7 @@ public class NamespaceContext : GenericContext
 
     public bool IsInstruction { get => isInstruction; set => isInstruction = value; }
 
-    public NamespaceContext(MemberType memberType) : base(memberType)
+    public NamespaceContext() : base(MemberType.Namespace)
     {
     }
 }

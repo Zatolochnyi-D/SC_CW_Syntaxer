@@ -26,7 +26,7 @@ public class ScriptFile : IMember
         body = fileContent;
         dimension = (0, body.Length - 1);
         SplitFileIntoLines();
-        context = new(MemberType.File);
+        context = new();
     }
 
     private void SplitFileIntoLines()

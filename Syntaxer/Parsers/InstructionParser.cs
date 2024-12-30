@@ -150,6 +150,7 @@ public class InstructionParser
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
             HandleNamespaceChecks();
+            contextToReturn = new NamespaceContext();
         }
         else
         {

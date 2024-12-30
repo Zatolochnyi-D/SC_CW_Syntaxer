@@ -6,7 +6,7 @@ public class FileContext : GenericContext
 
     public bool HasFileScopedNamespace { get => hasFileScopedNamespace; set => hasFileScopedNamespace = value; }
 
-    public FileContext(MemberType memberType) : base(memberType)
+    public FileContext() : base(MemberType.File)
     {
     }
 }
