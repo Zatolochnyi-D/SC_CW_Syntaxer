@@ -13,6 +13,8 @@ public class InstructionParser
     private List<SyntaxException> exceptions = [];
     private IMember parent;
 
+    public List<SyntaxException> Exceptions => exceptions;
+
     // Content is given without ;
     public InstructionParser(string instructionContent, (int, int) dimension, IMember parent)
     {
@@ -81,12 +83,14 @@ public class InstructionParser
             // There is more than 1 namespace keywords were found.
             // Throw non-critical error. It should prevent identifier from scanning futher, but should not prevent block from scanning.
             exceptions.Add(new KeywordMisusageException(dimension.begin, KeywordMisusageException.GetFoundDuplicateMessage(Keywords.NAMESPACE)));
+            return;
         }
         if (bodyElements.IndexOf(Keywords.NAMESPACE) != 0)
         {
             // Namespace keyword is not first.
             // Throw non-critical error.
             exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.KEYWORD_IS_NOT_FIRST_MESSAGE));
+            return;
         }
 
         MemberType locationType = parent.Parent.Context.MemberType;
@@ -95,43 +99,53 @@ public class InstructionParser
             // Namespace placed in the wrong location.
             // Throw non-critical error.
             exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+            return;
         }
 
         // At this point, there is only one namespace word, and it is first word in the sequece.
-        string[] leftover = bodyElements.Where(x => x != Keywords.NAMESPACE).ToArray();
-        if (leftover.Length == 0)
+        List<string> leftover = bodyElements.Where(x => x != Keywords.NAMESPACE).ToList();
+        if (leftover.Count == 0)
         {
             // There is no name provided.
             // Throw non-critical error.
             exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.ANY_NAME_DECLARED_MESSAGE));
+            return;
         }
 
         int firstDotPosition = bodyElements.IndexOf(".");
         if (firstDotPosition == -1)
         {
             // There is no dots, than sequence should contain only 2 words.
-            if (leftover.Length != 1)
+            if (leftover.Count != 1)
             {
                 // Throw exception about wrong naming.
                 exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                return;
             }
         }
         else
         {
             // Parse long name.
-
+            LongNameParser longNameParser = new(leftover, dimension);
+            List<string>? names = longNameParser.ParseBody();
+            if (names == null)
+            {
+                // An error occured.
+                exceptions.AddRange(longNameParser.Exceptions);
+                return;
+            }
+            else if (names.Count != 1)
+            {
+                // Throw exception about wrong naming.
+                exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                return;
+            }
         }
     }
 
     public void ParseBody()
     {
         bodyElements = SplitBody();
-        foreach (var el in bodyElements)
-        {
-            Console.Write("  ");
-            Console.Write(el);
-        }
-        Console.Write("\n");
         GenericContext contextToReturn;
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
