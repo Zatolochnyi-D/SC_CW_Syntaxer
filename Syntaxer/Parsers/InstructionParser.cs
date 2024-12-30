@@ -1,6 +1,7 @@
 using Syntaxer.Context;
 using Syntaxer.Exceptions;
 using Syntaxer.Members;
+using Syntaxer.Operations;
 
 namespace Syntaxer.Parsers;
 
@@ -137,7 +138,7 @@ public class InstructionParser
         {
             // Parse long name.
             LongNameParser longNameParser = new(leftover, dimension);
-            List<string>? names = longNameParser.ParseBody();
+            List<AccessOperation> names = longNameParser.ParseBody();
             if (names == null)
             {
                 // An error occured.

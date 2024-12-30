@@ -1,4 +1,5 @@
 using Syntaxer.Exceptions;
+using Syntaxer.Operations;
 
 namespace Syntaxer.Parsers;
 
@@ -19,86 +20,57 @@ public class LongNameParser
         this.dimension = dimension;
     }
 
-    public List<string>? ParseBody()
+    public List<AccessOperation> ParseBody()
     {
-        // Gather indexes of words and dots.
-        List<int> names = [];
-        List<int> dots = [];
+        Queue<AccessOperation> operations = [];
         for (int i = 0; i < body.Count; i++)
         {
-            if (body[i] == ".") dots.Add(i);
-            else names.Add(i);
-        }
-
-        foreach (var position in dots)
-        {
-            if (dots.Contains(position + 1))
+            if (body[i] == ".")
             {
-                // There are sequence of dots.
-                // Throw critical error.
-                exceptions.Add(new LongWordException(dimension.begin, LongWordException.WORD_INCOMPLETE_MESSAGE));
-                return null;
+                int leftIndex = i - 1;
+                string left;
+                if (leftIndex == -1 || body[leftIndex] == ".")
+                {
+                    // There is nothing on left or there is other dot, take it as empty.
+                    left = "";
+                }
+                else left = body[leftIndex];
+
+                int rightIndex = i + 1;
+                string right;
+                if (rightIndex == body.Count || body[rightIndex] == ".")
+                {
+                    // There is nothing on right or there is other dot.
+                    right = "";
+                }
+                else right = body[rightIndex];
+                operations.Enqueue(new AccessOperation(left, right));
             }
         }
 
-        // Gather indexes of neighbours of dots.
-        List<int> dotNeighbours = [];
-        foreach (var position in dots)
+        List<AccessOperation> mergedOperations = [];
+        AccessOperation currentOperation = operations.Dequeue();
+        while (true)
         {
-            dotNeighbours.Add(position - 1);
-            dotNeighbours.Add(position + 1);
-        }
-
-        if (dotNeighbours.Contains(-1) || dotNeighbours.Contains(body.Count))
-        {
-            // One of dots don't have beginning or ending word. 
-            // Throw critical error.
-            exceptions.Add(new LongWordException(dimension.begin, LongWordException.WORD_INCOMPLETE_MESSAGE));
-            return null;
-        }
-
-        // Go through selected indexes and count amount of long words.
-        // Remove indexes used in traversing from names indexes list to form list of single (short) words.
-        int wordCount = 0;
-        List<List<int>> words = [[]];
-        bool firstInSequence = true;
-        for (int i = 0; i < dotNeighbours.Count; i++)
-        {
-            words[wordCount].Add(dotNeighbours[i]);
-            names.Remove(dotNeighbours[i]);
-            if (firstInSequence)
+            for (int i = 0; i < operations.Count; i++)
             {
-                firstInSequence = false;
-                continue;
+                AccessOperation nextOperation = operations.Dequeue();
+                var result = currentOperation.TryMerge(nextOperation);
+                if (result == null)
+                {
+                    mergedOperations.Add(currentOperation);
+                    currentOperation = nextOperation;
+                    break;
+                }
+                else currentOperation = result;
             }
-            if (i == dotNeighbours.Count - 1) continue;
-            if (dotNeighbours[i] == dotNeighbours[i + 1])
+            if (operations.Count == 0)
             {
-                i++;
-            }
-            else
-            {
-                firstInSequence = true;
-                words.Add([]);
-                wordCount++;
+                mergedOperations.Add(currentOperation);
+                break;
             }
         }
 
-        // Add short words separately.
-        foreach (var position in names)
-        {
-            words.Add([]);
-            wordCount++;
-            words[wordCount].Add(position);
-        }
-
-        // Join words into solid strings.
-        List<string> results = [];
-        foreach (var positions in words)
-        {
-            results.Add(string.Join(".", positions.Select(x => body[x])));
-        }
-
-        return results;
+        return mergedOperations;
     }
 }
