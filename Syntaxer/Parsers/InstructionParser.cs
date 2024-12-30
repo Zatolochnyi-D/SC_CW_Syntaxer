@@ -73,6 +73,48 @@ public class InstructionParser
         return result;
     }
 
+    private void HandleNamespaceChecks()
+    {
+        // This body is a namespace.
+        if (bodyElements.IndexOf(Keywords.NAMESPACE) != 0)
+        {
+            // Namespace keyword is not first. Throw error.
+            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.KEYWORD_IS_NOT_FIRST_MESSAGE));
+        }
+        MemberType locationType = parent.Parent.Context.MemberType;
+        if (locationType == MemberType.File || locationType == MemberType.Namespace)
+        {
+            // Namespace is located in proper place.
+            string[] leftover = bodyElements.Where(x => x != Keywords.NAMESPACE).ToArray();
+            if (leftover.Length == 0)
+            {
+                // There is no name provided.
+                exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.ANY_NAME_DECLARED_MESSAGE));
+            }
+
+            int firstDotPosition = bodyElements.IndexOf(".");
+            if (firstDotPosition == -1)
+            {
+                // There is no dots, than sequence should contain only 2 words.
+                if (leftover.Length != 1)
+                {
+                    // Throw exception about wrong naming.
+                    exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                }
+            }
+            else
+            {
+                // Parse long name.
+
+            }
+        }
+        else
+        {
+            // Throw incorrect place for namespace.
+            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+        }
+    }
+
     public void ParseBody()
     {
         bodyElements = SplitBody();
@@ -85,47 +127,7 @@ public class InstructionParser
         GenericContext contextToReturn;
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
-            // This body is a namespace.
-            if (bodyElements.IndexOf(Keywords.NAMESPACE) != 0)
-            {
-                // Namespace keyword is not first. Throw error.
-                exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.KEYWORD_IS_NOT_FIRST_MESSAGE));
-            }
-            MemberType locationType = parent.Parent.Context.MemberType;
-            if (locationType == MemberType.File || locationType == MemberType.Namespace)
-            {
-                // Namespace is located in proper place.
-                string[] leftover = bodyElements.Where(x => x != Keywords.NAMESPACE).ToArray();
-                if (leftover.Length == 0)
-                {
-                    // There is no name provided.
-                    exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.ANY_NAME_DECLARED_MESSAGE));
-                }
-
-                int firstDotPosition = bodyElements.IndexOf(".");
-                if (firstDotPosition == -1)
-                {
-                    // There is no dots, than sequence should contain only 2 words.
-                    if (leftover.Length != 1)
-                    {
-                        // Throw exception about wrong naming.
-                        exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
-                    }
-                }
-                else
-                {
-                    // Parse long name.
-                    
-                }
-            }
-            else
-            {
-                // Throw incorrect place for namespace.
-                exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
-            }
-            // Look for errors.
-            NamespaceContext context = new(MemberType.Namespace);
-            contextToReturn = context;
+            HandleNamespaceChecks();
         }
         else
         {
