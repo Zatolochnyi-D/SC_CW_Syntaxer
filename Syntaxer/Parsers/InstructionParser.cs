@@ -76,49 +76,57 @@ public class InstructionParser
     private void HandleNamespaceChecks()
     {
         // This body is a namespace.
+        if (bodyElements.Count(x => x == Keywords.NAMESPACE) != 1)
+        {
+            // There is more than 1 namespace keywords were found.
+            // Throw non-critical error. It should prevent identifier from scanning futher, but should not prevent block from scanning.
+            exceptions.Add(new KeywordMisusageException(dimension.begin, KeywordMisusageException.GetFoundDuplicateMessage(Keywords.NAMESPACE)));
+        }
         if (bodyElements.IndexOf(Keywords.NAMESPACE) != 0)
         {
-            // Namespace keyword is not first. Throw error.
+            // Namespace keyword is not first.
+            // Throw non-critical error.
             exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.KEYWORD_IS_NOT_FIRST_MESSAGE));
         }
+
         MemberType locationType = parent.Parent.Context.MemberType;
-        if (locationType == MemberType.File || locationType == MemberType.Namespace)
+        if (locationType != MemberType.File && locationType != MemberType.Namespace)
         {
-            // Namespace is located in proper place.
-            string[] leftover = bodyElements.Where(x => x != Keywords.NAMESPACE).ToArray();
-            if (leftover.Length == 0)
-            {
-                // There is no name provided.
-                exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.ANY_NAME_DECLARED_MESSAGE));
-            }
+            // Namespace placed in the wrong location.
+            // Throw non-critical error.
+            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+        }
 
-            int firstDotPosition = bodyElements.IndexOf(".");
-            if (firstDotPosition == -1)
-            {
-                // There is no dots, than sequence should contain only 2 words.
-                if (leftover.Length != 1)
-                {
-                    // Throw exception about wrong naming.
-                    exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
-                }
-            }
-            else
-            {
-                // Parse long name.
+        // At this point, there is only one namespace word, and it is first word in the sequece.
+        string[] leftover = bodyElements.Where(x => x != Keywords.NAMESPACE).ToArray();
+        if (leftover.Length == 0)
+        {
+            // There is no name provided.
+            // Throw non-critical error.
+            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.ANY_NAME_DECLARED_MESSAGE));
+        }
 
+        int firstDotPosition = bodyElements.IndexOf(".");
+        if (firstDotPosition == -1)
+        {
+            // There is no dots, than sequence should contain only 2 words.
+            if (leftover.Length != 1)
+            {
+                // Throw exception about wrong naming.
+                exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
             }
         }
         else
         {
-            // Throw incorrect place for namespace.
-            exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+            // Parse long name.
+
         }
     }
 
     public void ParseBody()
     {
         bodyElements = SplitBody();
-        foreach(var el in bodyElements)
+        foreach (var el in bodyElements)
         {
             Console.Write("  ");
             Console.Write(el);
