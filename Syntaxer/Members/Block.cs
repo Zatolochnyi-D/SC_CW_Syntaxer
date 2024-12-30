@@ -30,6 +30,7 @@ public class Block : IMember
         this.parent = parent;
         parentFile = parent.ParentFile;
         wholeDimension = dimension;
+        context = new GenericContext(MemberType.Unknown);
 
         // blockContent always have "{", as it is a block defining symbol.
         // By identifying position of first "{", we can split content to identifier and block body.
