@@ -1,3 +1,5 @@
+using Syntaxer.Enumerations;
+
 namespace Syntaxer.Context;
 
 public class NamespaceContext : GenericContext

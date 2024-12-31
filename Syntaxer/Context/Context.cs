@@ -1,16 +1,6 @@
-namespace Syntaxer.Context;
+using Syntaxer.Enumerations;
 
-public enum MemberType
-{
-    Unknown,
-    File,
-    Namespace,
-    Class,
-    Struct,
-    Interface,
-    Delegate,
-    Enum
-}
+namespace Syntaxer.Context;
 
 public class GenericContext
 {

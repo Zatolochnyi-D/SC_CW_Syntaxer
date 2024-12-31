@@ -1,4 +1,5 @@
 using Syntaxer.Context;
+using Syntaxer.Enumerations;
 using Syntaxer.Exceptions;
 using Syntaxer.Parsers;
 
