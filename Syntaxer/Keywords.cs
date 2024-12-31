@@ -4,6 +4,17 @@ public static class Keywords
 {
     public const string NAMESPACE = "namespace";
 
+    public const string CLASS = "class";
+    public const string INTERFACE = "interface";
+    public const string ENUM = "enum";
+
+    public static readonly string[] TYPES =
+    [
+        CLASS,
+        INTERFACE,
+        ENUM,
+    ];
+
     public const string PRIVATE = "private";
     public const string PROTECTED = "protected";
     public const string PUBLIC = "public";
@@ -60,6 +71,7 @@ public static class Keywords
     public static readonly string[] ALL_KEYWORDS =
     [
         .. ACCESS_MODIFIERS,
+        .. TYPES,
         NAMESPACE,
     ];
 }
