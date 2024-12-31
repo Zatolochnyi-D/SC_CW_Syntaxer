@@ -129,19 +129,19 @@ public class InstructionParser
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
             HandleNamespaceChecks();
-            contextToReturn = new NamespaceContext();
+            contextToReturn = new GenericContext(MemberType.Namespace);
         }
         else if (bodyElements.Contains(Keywords.CLASS))
         {
-
+            contextToReturn = new GenericContext(MemberType.Class);
         }
         else if (bodyElements.Contains(Keywords.INTERFACE))
         {
-
+            contextToReturn = new GenericContext(MemberType.Interface);
         }
         else if (bodyElements.Contains(Keywords.ENUM))
         {
-
+            contextToReturn = new GenericContext(MemberType.Enum);
         }
         else
         {
