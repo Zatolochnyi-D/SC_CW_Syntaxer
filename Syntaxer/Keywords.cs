@@ -56,4 +56,10 @@ public static class Keywords
         .. OPERATORS,
         .. ACCESS_OPERATORS,
     ];
+
+    public static readonly string[] ALL_KEYWORDS =
+    [
+        .. ACCESS_MODIFIERS,
+        NAMESPACE,
+    ];
 }
