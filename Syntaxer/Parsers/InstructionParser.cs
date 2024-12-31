@@ -130,6 +130,18 @@ public class InstructionParser
             HandleNamespaceChecks();
             contextToReturn = new NamespaceContext();
         }
+        else if (bodyElements.Contains(Keywords.CLASS))
+        {
+
+        }
+        else if (bodyElements.Contains(Keywords.INTERFACE))
+        {
+
+        }
+        else if (bodyElements.Contains(Keywords.ENUM))
+        {
+
+        }
         else
         {
             contextToReturn = new(MemberType.Unknown);
