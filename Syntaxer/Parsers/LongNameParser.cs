@@ -1,4 +1,3 @@
-using Syntaxer.Exceptions;
 using Syntaxer.Operations;
 
 namespace Syntaxer.Parsers;
@@ -47,7 +46,7 @@ public class LongNameParser
                 {
                     right = body[rightIndex];
                 }
-                operations.Enqueue(new AccessOperation(left, right));
+                operations.Enqueue(new AccessOperation(dimension.begin, left, right));
             }
         }
 
@@ -92,7 +91,7 @@ public class LongNameParser
         {
             if (!usedIndexes.Contains(i))
             {
-                mergedOperations.Add(new(body[i]));
+                mergedOperations.Add(new(dimension.begin, body[i]));
             }
         }
 

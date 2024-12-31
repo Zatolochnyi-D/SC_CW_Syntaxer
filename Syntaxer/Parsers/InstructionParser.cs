@@ -108,15 +108,19 @@ public class InstructionParser
         // Parse long name.
         LongNameParser longNameParser = new(leftover, dimension);
         List<AccessOperation> names = longNameParser.ParseBody();
-        foreach (var name in names)
-        {
-            Console.WriteLine(name);
-        }
         if (names.Count != 1)
         {
             // Throw exception about wrong naming.
             exceptions.Add(new NamespaceDeclarationException(dimension.begin, NamespaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
             return;
+        }
+        else
+        {
+            foreach (var name in names)
+            {
+                name.Validate();
+                exceptions.AddRange(name.Exceptions);
+            }
         }
     }
 
