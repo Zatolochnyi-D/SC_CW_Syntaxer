@@ -59,6 +59,11 @@ public class BlockParser : Parser
             {
                 // End of instruction found.
                 member += Body[i];
+                if (member.Contains(Keywords.FOR))
+                {
+                    // Not end of instruction, but for-loop declarer.
+                    continue;
+                }
                 int end = dimension.begin + i; // Points at ";". "i" is local position, shift by begin to convert to file postion.
                 members.Add(new Instruction(member, (start, end), parent));
                 start = dimension.begin + i + 1; // Next symbol becomes start of next instruction/block.
