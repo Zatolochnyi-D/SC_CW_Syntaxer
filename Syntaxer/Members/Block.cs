@@ -109,6 +109,13 @@ public class Block : IMember
         var identifierParser = new IdentifierParser(identifier, identifierDimension, this);
         context = identifierParser.ParseBody();
         exceptions.AddRange(identifierParser.Exceptions);
+        if (context.MemberType == MemberType.Unknown)
+        {
+            // Block cannot be identified, so futher scan does not have sense.
+            exceptions.Add(new UnknownBlockException(identifierDimension.begin));
+            return;
+        }
+
         var bodyParser = new BlockParser(body, bodyDimension, this);
         bodyParser.ParseBody();
         members = bodyParser.Members;
