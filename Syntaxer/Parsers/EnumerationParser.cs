@@ -8,26 +8,28 @@ namespace Syntaxer.Parsers;
 public class EnumerationParser
 {
     private List<string> body;
+    private List<string> separators;
     private (int begin, int end) dimension;
 
-    public EnumerationParser(List<string> expectedEnumeration, (int, int) dimension)
+    public EnumerationParser(List<string> expectedEnumeration, (int, int) dimension, List<string> separators)
     {
         body = expectedEnumeration;
+        this.separators = separators;
         this.dimension = dimension;
     }
 
-    public List<AccessOperation> ParseBody()
+    public List<Operation> ParseBody()
     {
-        Queue<AccessOperation> operations = [];
+        Queue<Operation> operations = [];
         for (int i = 0; i < body.Count; i++)
         {
-            if (body[i] == ".")
+            if (separators.Contains(body[i]))
             {
                 int leftIndex = i - 1;
                 string left;
-                if (leftIndex == -1 || body[leftIndex] == ".")
+                if (leftIndex == -1 || separators.Contains(body[leftIndex]))
                 {
-                    // There is nothing on left or there is other dot, take it as empty.
+                    // There is nothing on left or there is other separator, take it as empty.
                     left = "";
                 }
                 else
@@ -37,7 +39,7 @@ public class EnumerationParser
 
                 int rightIndex = i + 1;
                 string right;
-                if (rightIndex == body.Count || body[rightIndex] == ".")
+                if (rightIndex == body.Count || separators.Contains(body[leftIndex]))
                 {
                     // There is nothing on right or there is other dot.
                     right = "";
@@ -46,20 +48,20 @@ public class EnumerationParser
                 {
                     right = body[rightIndex];
                 }
-                operations.Enqueue(new AccessOperation(dimension.begin, left, right));
+                operations.Enqueue(new Operation(dimension.begin, left, right));
             }
         }
 
-        List<AccessOperation> mergedOperations = [];
+        List<Operation> mergedOperations = [];
         // When body consists of separate words, without dots, queue will be empty.
         if (operations.Count != 0)
         {
-            AccessOperation currentOperation = operations.Dequeue();
+            Operation currentOperation = operations.Dequeue();
             while (true)
             {
                 for (int i = 0; i < operations.Count; i++)
                 {
-                    AccessOperation nextOperation = operations.Dequeue();
+                    Operation nextOperation = operations.Dequeue();
                     var result = currentOperation.TryMerge(nextOperation);
                     if (result == null)
                     {
@@ -80,7 +82,7 @@ public class EnumerationParser
         List<int> usedIndexes = [];
         for (int i = 0; i < body.Count; i++)
         {
-            if (body[i] == ".")
+            if (separators.Contains(body[i]))
             {
                 usedIndexes.Add(i - 1);
                 usedIndexes.Add(i);
