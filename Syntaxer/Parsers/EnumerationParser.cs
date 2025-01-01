@@ -39,7 +39,7 @@ public class EnumerationParser
 
                 int rightIndex = i + 1;
                 string right;
-                if (rightIndex == body.Count || separators.Contains(body[leftIndex]))
+                if (rightIndex == body.Count || separators.Contains(body[rightIndex]))
                 {
                     // There is nothing on right or there is other dot.
                     right = "";
