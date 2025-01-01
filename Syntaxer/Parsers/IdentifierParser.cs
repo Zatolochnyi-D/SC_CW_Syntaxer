@@ -6,7 +6,7 @@ using Syntaxer.Operations;
 
 namespace Syntaxer.Parsers;
 
-public class InstructionParser
+public class IdentifierParser
 {
     private string body;
     private string cleanBody;
@@ -18,7 +18,7 @@ public class InstructionParser
     public List<SyntaxException> Exceptions => exceptions;
 
     // Content is given without ;
-    public InstructionParser(string instructionContent, (int, int) dimension, IMember parent)
+    public IdentifierParser(string instructionContent, (int, int) dimension, IMember parent)
     {
         body = instructionContent;
         cleanBody = new string(body.Where(x => !char.IsControl(x)).ToArray()); // Remove invisible characters.

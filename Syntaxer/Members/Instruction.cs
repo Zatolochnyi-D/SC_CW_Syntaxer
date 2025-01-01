@@ -14,7 +14,7 @@ public class Instruction : IMember
     private IMember parent;
     private string body;
     private (int begin, int end) dimension;
-    private InstructionParser parser;
+    private IdentifierParser parser;
 
     public ScriptFile ParentFile => parentFile;
     public IMember Parent => parent;

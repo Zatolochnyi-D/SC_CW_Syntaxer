@@ -106,7 +106,7 @@ public class Block : IMember
             return;
         }
         // Scan identifier first.
-        var identifierParser = new InstructionParser(identifier, identifierDimension, this);
+        var identifierParser = new IdentifierParser(identifier, identifierDimension, this);
         context = identifierParser.ParseBody();
         exceptions.AddRange(identifierParser.Exceptions);
         var bodyParser = new BlockParser(body, bodyDimension, this);
