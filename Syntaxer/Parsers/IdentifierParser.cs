@@ -172,10 +172,6 @@ public class IdentifierParser
             }
             else
             {
-                // foreach (var words in inheritance)
-                // {
-                //     Console.WriteLine("  "+ words);
-                // }
                 var enumParser = new EnumerationParser(inheritance, dimension, [","]);
                 List<Operation> operations = enumParser.ParseBody();
                 if (operations.Count != 1)
@@ -197,7 +193,116 @@ public class IdentifierParser
 
     private void HandleInterfaceChecks()
     {
+        MemberType locationType = parent.Parent.Context.MemberType;
+        MemberType[] allowedTypes = [MemberType.File, MemberType.Namespace, MemberType.Class, MemberType.Interface];
+        if (!allowedTypes.Contains(locationType))
+        {
+            // Class placed in the wrong location.
+            exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+        }
 
+        int indexOfClassKeyword = bodyElements.IndexOf(Keywords.INTERFACE);
+        if (indexOfClassKeyword - 1 != -1)
+        {
+            // There is something on left.
+            List<string> leftPart = bodyElements[..indexOfClassKeyword];
+            IEnumerable<string> wrongModifiers = leftPart.Where(x => !Keywords.ACCESS_MODIFIERS.Contains(x));
+            IEnumerable<string> nonModifiers = wrongModifiers.Where(x => !Keywords.ALL_KEYWORDS.Contains(x));
+            wrongModifiers = wrongModifiers.Except(nonModifiers);
+            foreach (var word in nonModifiers)
+            {
+                // Those words are not modifiers.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetNonModifierMessage(word)));
+            }
+            foreach (var modifier in wrongModifiers)
+            {
+                // There is some unrecognized words.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(modifier)));
+            }
+            IEnumerable<string> correctModifiers = leftPart.Where(x => !wrongModifiers.Contains(x));
+            IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
+            foreach (var duplicate in duplicates)
+            {
+                // There is some duplicates.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+            }
+        }
+
+        List<string> name = [];
+        List<string>? inheritance = null;
+        if (indexOfClassKeyword + 1 != bodyElements.Count)
+        {
+            // There is something on right.
+            List<string> rightPart;
+            rightPart = bodyElements[(indexOfClassKeyword + 1)..];
+            int indexOfInheritanceDeclarator = rightPart.IndexOf(Keywords.INHERITANCE_OPERATOR);
+            if (indexOfInheritanceDeclarator != -1)
+            {
+                // There are inheritance part.
+                if (indexOfInheritanceDeclarator - 1 != -1)
+                {
+                    // There are something on left from inheritance operator (name presumably).
+                    name = rightPart[..indexOfInheritanceDeclarator];
+                    if (indexOfInheritanceDeclarator + 1 != rightPart.Count)
+                    {
+                        // There is inheritance on right side from inheritance operator.
+                        inheritance = rightPart[(indexOfInheritanceDeclarator + 1)..];
+                    }
+                    else
+                    {
+                        inheritance = [];
+                    }
+                }
+            }
+            else
+            {
+                // No inheritance, only name.
+                name = rightPart;
+            }
+        }
+
+        if (name.Count == 0)
+        {
+            // Name is empty.
+            exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.NO_NAME_DECLARED_MESSAGE));
+        }
+        else if (name.Count != 1)
+        {
+            // To many words.
+            exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+        }
+        else if (Keywords.ALL_KEYWORDS.Contains(name[0]))
+        {
+            // Provided name is a keyword.
+            exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.GetKeywordAsNameMessage(name[0])));
+        }
+
+        if (inheritance != null)
+        {
+            // Inheritance part is present
+            if (inheritance.Count == 0)
+            {
+                exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.INHERITANCE_MISSING_MESSAGE));
+            }
+            else
+            {
+                var enumParser = new EnumerationParser(inheritance, dimension, [","]);
+                List<Operation> operations = enumParser.ParseBody();
+                if (operations.Count != 1)
+                {
+                    // There is more than 1 operation, meaning , was missed.
+                    exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.COMMA_MISSED_IN_INHERITANCE));
+                }
+                else
+                {
+                    foreach (var operation in operations)
+                    {
+                        operation.Validate();
+                        exceptions.AddRange(operation.Exceptions);
+                    }
+                }
+            }
+        }
     }
 
     private void HandleEnumChecks()
