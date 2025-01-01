@@ -5,14 +5,14 @@ namespace Syntaxer.Parsers;
 /// <summary>
 /// Takes sequence of what supposed to be a long name, returns list of names it found.
 /// </summary>
-public class LongNameParser
+public class EnumerationParser
 {
     private List<string> body;
     private (int begin, int end) dimension;
 
-    public LongNameParser(List<string> expectedName, (int, int) dimension)
+    public EnumerationParser(List<string> expectedEnumeration, (int, int) dimension)
     {
-        body = expectedName;
+        body = expectedEnumeration;
         this.dimension = dimension;
     }
 
