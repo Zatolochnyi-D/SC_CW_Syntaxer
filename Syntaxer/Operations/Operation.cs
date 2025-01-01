@@ -51,7 +51,7 @@ public class Operation
         if (parts.Contains(""))
         {
             // There is improperly located operators.
-            exceptions.Add(new LongWordException(position, LongWordException.WORD_INCOMPLETE_MESSAGE));
+            exceptions.Add(new EnumeratioException(position));
         }
         var validator = new NameValidator(position, [.. parts]);
         validator.Validate();
