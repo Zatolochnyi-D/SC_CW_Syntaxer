@@ -109,6 +109,7 @@ public class Block : IMember
         var identifierParser = new IdentifierParser(identifier, identifierDimension, this);
         context = identifierParser.ParseBody();
         exceptions.AddRange(identifierParser.Exceptions);
+        Console.WriteLine(context.MemberType);
         if (context.MemberType == MemberType.Unknown)
         {
             // Block cannot be identified, so futher scan does not have sense.

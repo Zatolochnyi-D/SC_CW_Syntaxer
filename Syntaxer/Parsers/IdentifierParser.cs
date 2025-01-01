@@ -78,7 +78,7 @@ public class IdentifierParser
         if (!allowedTypes.Contains(locationType))
         {
             // Class placed in the wrong location.
-            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.INCORRECT_PLACE_MESSAGE));
+            exceptions.Add(new TypePlaceException(dimension.begin));
         }
 
         int indexOfClassKeyword = bodyElements.IndexOf(Keywords.CLASS);
@@ -198,7 +198,7 @@ public class IdentifierParser
         if (!allowedTypes.Contains(locationType))
         {
             // Class placed in the wrong location.
-            exceptions.Add(new InterfaceDeclarationException(dimension.begin, InterfaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+            exceptions.Add(new TypePlaceException(dimension.begin));
         }
 
         int indexOfClassKeyword = bodyElements.IndexOf(Keywords.INTERFACE);
@@ -312,7 +312,7 @@ public class IdentifierParser
         if (!allowedTypes.Contains(locationType))
         {
             // Class placed in the wrong location.
-            exceptions.Add(new EnumDeclarationException(dimension.begin, EnumDeclarationException.INCORRECT_PLACE_MESSAGE));
+            exceptions.Add(new TypePlaceException(dimension.begin));
         }
 
         int indexOfEnumKeyword = bodyElements.IndexOf(Keywords.ENUM);
@@ -366,6 +366,33 @@ public class IdentifierParser
         }
     }
 
+    private void HandleWhileChecks()
+    {
+        foreach (var el in bodyElements)
+        {
+            Console.Write(el + "  ");
+        }
+        Console.WriteLine();
+        MemberType locationType = parent.Parent.Context.MemberType;
+        MemberType[] allowedTypes = [MemberType.Method, MemberType.Constructor, MemberType.Forloop, MemberType.While, MemberType.If];
+        if (!allowedTypes.Contains(locationType))
+        {
+            // Class placed in the wrong location.
+            exceptions.Add(new TypePlaceException(dimension.begin));
+        }
+
+        if (bodyElements.IndexOf(Keywords.WHILE) != 1)
+        {
+            // Keyword is not first.
+            exceptions.Add(new WhileDeclarationException(dimension.begin, WhileDeclarationException.NOT_FIRST));
+        }
+    }
+
+    private void HandleForChecks()
+    {
+
+    }
+
     public GenericContext ParseBody()
     {
         bodyElements = IdentifierSplitTools.SplitBody(cleanBody);
@@ -389,6 +416,16 @@ public class IdentifierParser
         {
             HandleEnumChecks();
             contextToReturn = new GenericContext(MemberType.Enum);
+        }
+        else if (bodyElements.Contains(Keywords.WHILE))
+        {
+            HandleWhileChecks();
+            contextToReturn = new GenericContext(MemberType.While);
+        }
+        else if (bodyElements.Contains(Keywords.FOR))
+        {
+            HandleForChecks();
+            contextToReturn = new GenericContext(MemberType.Forloop);
         }
         else
         {

@@ -36,6 +36,7 @@ public static class Keywords
     public const string RETURN = "return";
     public const string THIS = "this";
     public const string USING = "using";
+    public const string WHILE = "while";
 
     public static readonly string[] TYPES =
     [
@@ -81,7 +82,8 @@ public static class Keywords
         RETURN,
         THIS,
         USING,
-        OVERRIDE
+        OVERRIDE,
+        WHILE
     ];
     #endregion
 

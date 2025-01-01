@@ -11,4 +11,9 @@ public enum MemberType
     Delegate,
     Enum,
     EnumContent,
+    Method,
+    Constructor,
+    Forloop,
+    If,
+    While
 }
