@@ -3,7 +3,7 @@ using Syntaxer.Validators;
 
 namespace Syntaxer.Operations;
 
-public class AccessOperation
+public class Operation
 {
     private List<string> parts = [];
     private int leftEndIndex = 0;
@@ -13,7 +13,7 @@ public class AccessOperation
 
     public List<SyntaxException> Exceptions => exceptions;
 
-    public AccessOperation(int position, params string[] parts)
+    public Operation(int position, params string[] parts)
     {
         this.parts.AddRange(parts);
         rightEndIndex = parts.Length - 1;
@@ -30,15 +30,15 @@ public class AccessOperation
         return parts[rightEndIndex];
     }
 
-    public AccessOperation? TryMerge(AccessOperation b)
+    public Operation? TryMerge(Operation b)
     {
         if (GetRight() == b.GetLeft())
         {
-            return new AccessOperation(position, parts.Concat(b.parts.Skip(1)).ToArray());
+            return new Operation(position, parts.Concat(b.parts.Skip(1)).ToArray());
         }
         else if (GetLeft() == b.GetRight())
         {
-            return new AccessOperation(b.position, b.parts.Concat(parts.Skip(1)).ToArray());
+            return new Operation(b.position, b.parts.Concat(parts.Skip(1)).ToArray());
         }
         else
         {
@@ -50,7 +50,7 @@ public class AccessOperation
     {
         if (parts.Contains(""))
         {
-            // There is improperly located dots.
+            // There is improperly located operators.
             exceptions.Add(new LongWordException(position, LongWordException.WORD_INCOMPLETE_MESSAGE));
         }
         var validator = new NameValidator(position, [.. parts]);
@@ -60,6 +60,6 @@ public class AccessOperation
 
     public override string ToString()
     {
-        return string.Join(".", parts);
+        return string.Join(" and ", parts);
     }
 }
