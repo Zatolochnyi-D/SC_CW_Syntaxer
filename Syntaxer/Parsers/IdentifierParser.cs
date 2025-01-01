@@ -26,57 +26,6 @@ public class IdentifierParser
         this.parent = parent;
     }
 
-    /// <summary>
-    /// Reads string for symbols. Splits it into left word, found symbol and right word.
-    /// </summary>
-    /// <param name="target">String to split.</param>
-    /// <returns>List of splitted words.</returns>
-    private List<string> SplitStringBySymbols(string target)
-    {
-        string word = "";
-        List<string> words = [];
-        for (int i = 0; i < target.Length; i++)
-        {
-            if (!char.IsLetterOrDigit(target[i]))
-            {
-                if (word != string.Empty) words.Add(word);
-                if (i != target.Length - 1)
-                {
-                    string possibleOperator = $"{target[i]}{target[i + 1]}";
-                    if (Keywords.NON_ACCESS_OPERATORS.Contains(possibleOperator))
-                    {
-                        // This and next symbol form 2-symbol operator.
-                        words.Add(possibleOperator);
-                        i++;
-                        word = "";
-                        continue;
-                    }
-                }
-                words.Add(target[i].ToString());
-                word = "";
-                continue;
-            }
-            word += target[i];
-        }
-        if (word != string.Empty) words.Add(word);
-        return words;
-    }
-
-    /// <summary>
-    /// Split line into separate words or symbols for futher analysis.
-    /// </summary>
-    /// <returns>List of words and symbols.</returns>
-    private List<string> SplitBody()
-    {
-        IEnumerable<string> splitResult = cleanBody.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-        List<string> result = [];
-        foreach (var element in splitResult)
-        {
-            result.AddRange(SplitStringBySymbols(element));
-        }
-        return result;
-    }
-
     private void HandleNamespaceChecks()
     {
         // This body is a namespace.
@@ -253,12 +202,68 @@ public class IdentifierParser
 
     private void HandleEnumChecks()
     {
+        MemberType locationType = parent.Parent.Context.MemberType;
+        MemberType[] allowedTypes = [MemberType.File, MemberType.Namespace, MemberType.Class, MemberType.Interface];
+        if (!allowedTypes.Contains(locationType))
+        {
+            // Class placed in the wrong location.
+            exceptions.Add(new EnumDeclarationException(dimension.begin, EnumDeclarationException.INCORRECT_PLACE_MESSAGE));
+        }
 
+        int indexOfEnumKeyword = bodyElements.IndexOf(Keywords.ENUM);
+        if (indexOfEnumKeyword - 1 != -1)
+        {
+            // There is something on left.
+            List<string> leftPart = bodyElements[..indexOfEnumKeyword];
+            IEnumerable<string> wrongModifiers = leftPart.Where(x => !Keywords.ACCESS_MODIFIERS.Contains(x));
+            IEnumerable<string> nonModifiers = wrongModifiers.Where(x => !Keywords.ALL_KEYWORDS.Contains(x));
+            wrongModifiers = wrongModifiers.Except(nonModifiers);
+            foreach (var word in nonModifiers)
+            {
+                // Those words are not modifiers.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetNonModifierMessage(word)));
+            }
+            foreach (var modifier in wrongModifiers)
+            {
+                // There is some unrecognized words.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(modifier)));
+            }
+            IEnumerable<string> correctModifiers = leftPart.Where(x => !wrongModifiers.Contains(x));
+            IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
+            foreach (var duplicate in duplicates)
+            {
+                // There is some duplicates.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+            }
+        }
+
+        List<string> name = [];
+        if (indexOfEnumKeyword + 1 != bodyElements.Count)
+        {
+            name = bodyElements[(indexOfEnumKeyword + 1)..];
+            // There is something on right.
+        }
+
+        if (name.Count == 0)
+        {
+            // Name is empty.
+            exceptions.Add(new EnumDeclarationException(dimension.begin, EnumDeclarationException.NO_NAME_DECLARED_MESSAGE));
+        }
+        else if (name.Count != 1)
+        {
+            // To many words.
+            exceptions.Add(new EnumDeclarationException(dimension.begin, EnumDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+        }
+        else if (Keywords.ALL_KEYWORDS.Contains(name[0]))
+        {
+            // Provided name is a keyword.
+            exceptions.Add(new EnumDeclarationException(dimension.begin, EnumDeclarationException.GetKeywordAsNameMessage(name[0])));
+        }
     }
 
     public GenericContext ParseBody()
     {
-        bodyElements = SplitBody();
+        bodyElements = IdentifierSplitTools.SplitBody(cleanBody);
         GenericContext contextToReturn;
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {

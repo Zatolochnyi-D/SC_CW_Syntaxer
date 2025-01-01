@@ -16,7 +16,8 @@ public class Program
             "/Users/denis/Desktop/SC_things_testing/Testing/Blocks.cs",
             "/Users/denis/Desktop/SC_things_testing/Testing/Namespaces.cs",
             "/Users/denis/Desktop/SC_things_testing/Testing/Classes.cs",
-            "/Users/denis/Desktop/SC_CW_Syntaxer/Syntaxer/Members/ScriptFile.cs"
+            "/Users/denis/Desktop/SC_things_testing/Testing/Enums.cs",
+            // "/Users/denis/Desktop/SC_CW_Syntaxer/Syntaxer/Members/ScriptFile.cs"
         ];
 
         foreach (var path in filePathes)

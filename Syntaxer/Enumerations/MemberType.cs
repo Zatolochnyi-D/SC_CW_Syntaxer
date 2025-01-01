@@ -9,5 +9,6 @@ public enum MemberType
     Struct,
     Interface,
     Delegate,
-    Enum
+    Enum,
+    EnumContent,
 }
