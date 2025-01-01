@@ -20,6 +20,7 @@ public static class Keywords
     public const string SEALED = "sealed";
 
     public const string VIRTUAL = "virtual";
+    public const string OVERRIDE = "override";
     public const string BASE = "base";
     public const string BREAK = "break";
     public const string CONST = "const";
@@ -80,6 +81,7 @@ public static class Keywords
         RETURN,
         THIS,
         USING,
+        OVERRIDE
     ];
     #endregion
 
