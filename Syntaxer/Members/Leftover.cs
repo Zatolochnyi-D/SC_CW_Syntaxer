@@ -45,7 +45,6 @@ public class Leftover : IMember
             {
                 bodyElements = bodyElements[..^1];
             }
-            Console.WriteLine();
             var parser = new EnumerationParser(bodyElements, dimension, [","]);
             List<Operation> operations = parser.ParseBody();
             if (operations.Count != 1)
