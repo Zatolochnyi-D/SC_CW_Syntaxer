@@ -107,8 +107,8 @@ public class IdentifierParser
         }
 
         // Parse long name.
-        LongNameParser longNameParser = new(leftover, dimension);
-        List<AccessOperation> names = longNameParser.ParseBody();
+        EnumerationParser enumerationParser = new(leftover, dimension, ["."]);
+        List<Operation> names = enumerationParser.ParseBody();
         foreach (var name in names)
         {
             name.Validate();
@@ -129,37 +129,48 @@ public class IdentifierParser
         if (!allowedTypes.Contains(locationType))
         {
             // Class placed in the wrong location.
-            exceptions.Add(new ClassDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
-            return;
+            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.INCORRECT_PLACE_MESSAGE));
         }
 
         int indexOfClassKeyword = bodyElements.IndexOf(Keywords.CLASS);
         if (indexOfClassKeyword - 1 != -1)
         {
+            // There is something on left.
             List<string> leftPart = bodyElements[..indexOfClassKeyword];
-            List<string> wrongModifiers = bodyElements.Where(x => !Keywords.CLASS_MODIFIERS.Contains(x)).ToList();
-            foreach (var word in wrongModifiers)
+            IEnumerable<string> wrongModifiers = leftPart.Where(x => !Keywords.CLASS_MODIFIERS.Contains(x));
+            IEnumerable<string> nonModifiers = wrongModifiers.Where(x => !Keywords.ALL_KEYWORDS.Contains(x));
+            wrongModifiers = wrongModifiers.Except(nonModifiers);
+            foreach (var word in nonModifiers)
+            {
+                // Those words are not modifiers.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetNonModifierMessage(word)));
+            }
+            foreach (var modifier in wrongModifiers)
             {
                 // There is some unrecognized words.
-                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetUnrecognizedWordMessage(word)));
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(modifier)));
             }
-            List<string> duplicates = leftPart.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct().ToList();
+            IEnumerable<string> correctModifiers = leftPart.Where(x => !wrongModifiers.Contains(x));
+            IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
             foreach (var duplicate in duplicates)
             {
                 // There is some duplicates.
                 exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
             }
-            List<string> conflictKeywords = leftPart.Where(x => x == Keywords.ABSTRACT || x == Keywords.SEALED || x == Keywords.STATIC).Distinct().ToList();
-            if (conflictKeywords.Count > 1)
+            IEnumerable<string> conflictKeywords = correctModifiers.Where(x => x == Keywords.ABSTRACT || x == Keywords.SEALED || x == Keywords.STATIC).Distinct();
+            if (conflictKeywords.Count() > 1)
             {
                 // There are more than 1 conflict words, thus there is an conflict.
                 exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetConflictedMessage(conflictKeywords)));
             }
         }
 
-        List<string> rightPart;
+        List<string> name = [];
+        List<string>? inheritance = null;
         if (indexOfClassKeyword + 1 != bodyElements.Count)
         {
+            // There is something on right.
+            List<string> rightPart;
             rightPart = bodyElements[(indexOfClassKeyword + 1)..];
             int indexOfInheritanceDeclarator = rightPart.IndexOf(Keywords.INHERITANCE_OPERATOR);
             if (indexOfInheritanceDeclarator != -1)
@@ -167,30 +178,82 @@ public class IdentifierParser
                 // There are inheritance part.
                 if (indexOfInheritanceDeclarator - 1 != -1)
                 {
-                    List<string> name = rightPart[..indexOfInheritanceDeclarator];
-                    if (name.Count != 1)
+                    // There are something on left from inheritance operator (name presumably).
+                    name = rightPart[..indexOfInheritanceDeclarator];
+                    if (indexOfInheritanceDeclarator + 1 != rightPart.Count)
                     {
-                        // There is to many words in name.
-                        exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                        // There is inheritance on right side from inheritance operator.
+                        inheritance = rightPart[(indexOfInheritanceDeclarator + 1)..];
+                    }
+                    else
+                    {
+                        inheritance = [];
                     }
                 }
             }
             else
             {
                 // No inheritance, only name.
-                if (rightPart.Count != 1)
+                name = rightPart;
+            }
+        }
+
+        if (name.Count == 0)
+        {
+            // Name is empty.
+            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.NO_NAME_DECLARED_MESSAGE));
+        }
+        else if (name.Count != 1)
+        {
+            // To many words.
+            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+        }
+        else if (Keywords.ALL_KEYWORDS.Contains(name[0]))
+        {
+            // Provided name is a keyword.
+            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.GetKeywordAsNameMessage(name[0])));
+        }
+
+        if (inheritance != null)
+        {
+            // Inheritance part is present
+            if (inheritance.Count == 0)
+            {
+                exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.INHERITANCE_MISSING_MESSAGE));
+            }
+            else
+            {
+                // foreach (var words in inheritance)
+                // {
+                //     Console.WriteLine("  "+ words);
+                // }
+                var enumParser = new EnumerationParser(inheritance, dimension, [","]);
+                List<Operation> operations = enumParser.ParseBody();
+                if (operations.Count != 1)
                 {
-                    // There is to many words in name.
-                    exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                    // There is more than 1 operation, meaning , was missed.
+                    exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.COMMA_MISSED_IN_INHERITANCE));
+                }
+                else
+                {
+                    foreach (var operation in operations)
+                    {
+                        operation.Validate();
+                        exceptions.AddRange(operation.Exceptions);
+                    }
                 }
             }
         }
-        else
-        {
-            // There is nothing at right of keyword, meaning there is no name provided.
-            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.NO_NAME_DECLARED_MESSAGE));
-            return;
-        }
+    }
+
+    private void HandleInterfaceChecks()
+    {
+
+    }
+
+    private void HandleEnumChecks()
+    {
+
     }
 
     public GenericContext ParseBody()
@@ -209,10 +272,12 @@ public class IdentifierParser
         }
         else if (bodyElements.Contains(Keywords.INTERFACE))
         {
+            HandleInterfaceChecks();
             contextToReturn = new GenericContext(MemberType.Interface);
         }
         else if (bodyElements.Contains(Keywords.ENUM))
         {
+            HandleEnumChecks();
             contextToReturn = new GenericContext(MemberType.Enum);
         }
         else
