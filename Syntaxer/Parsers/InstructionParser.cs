@@ -43,7 +43,7 @@ public class InstructionParser
                 if (i != target.Length - 1)
                 {
                     string possibleOperator = $"{target[i]}{target[i + 1]}";
-                    if (Keywords.OPERATORS.Contains(possibleOperator))
+                    if (Keywords.NON_ACCESS_OPERATORS.Contains(possibleOperator))
                     {
                         // This and next symbol form 2-symbol operator.
                         words.Add(possibleOperator);
@@ -122,6 +122,77 @@ public class InstructionParser
         }
     }
 
+    private void HandleClassChecks()
+    {
+        MemberType locationType = parent.Parent.Context.MemberType;
+        MemberType[] allowedTypes = [MemberType.File, MemberType.Namespace, MemberType.Class, MemberType.Interface];
+        if (!allowedTypes.Contains(locationType))
+        {
+            // Class placed in the wrong location.
+            exceptions.Add(new ClassDeclarationException(dimension.begin, NamespaceDeclarationException.INCORRECT_PLACE_MESSAGE));
+            return;
+        }
+
+        int indexOfClassKeyword = bodyElements.IndexOf(Keywords.CLASS);
+        if (indexOfClassKeyword - 1 != -1)
+        {
+            List<string> leftPart = bodyElements[..indexOfClassKeyword];
+            List<string> wrongModifiers = bodyElements.Where(x => !Keywords.CLASS_MODIFIERS.Contains(x)).ToList();
+            foreach (var word in wrongModifiers)
+            {
+                // There is some unrecognized words.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetUnrecognizedWordMessage(word)));
+            }
+            List<string> duplicates = leftPart.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct().ToList();
+            foreach (var duplicate in duplicates)
+            {
+                // There is some duplicates.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+            }
+            List<string> conflictKeywords = leftPart.Where(x => x == Keywords.ABSTRACT || x == Keywords.SEALED || x == Keywords.STATIC).Distinct().ToList();
+            if (conflictKeywords.Count > 1)
+            {
+                // There are more than 1 conflict words, thus there is an conflict.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetConflictedMessage(conflictKeywords)));
+            }
+        }
+
+        List<string> rightPart;
+        if (indexOfClassKeyword + 1 != bodyElements.Count)
+        {
+            rightPart = bodyElements[(indexOfClassKeyword + 1)..];
+            int indexOfInheritanceDeclarator = rightPart.IndexOf(Keywords.INHERITANCE_OPERATOR);
+            if (indexOfInheritanceDeclarator != -1)
+            {
+                // There are inheritance part.
+                if (indexOfInheritanceDeclarator - 1 != -1)
+                {
+                    List<string> name = rightPart[..indexOfInheritanceDeclarator];
+                    if (name.Count != 1)
+                    {
+                        // There is to many words in name.
+                        exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                    }
+                }
+            }
+            else
+            {
+                // No inheritance, only name.
+                if (rightPart.Count != 1)
+                {
+                    // There is to many words in name.
+                    exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.MANY_NAMES_DECLARED_MESSAGE));
+                }
+            }
+        }
+        else
+        {
+            // There is nothing at right of keyword, meaning there is no name provided.
+            exceptions.Add(new ClassDeclarationException(dimension.begin, ClassDeclarationException.NO_NAME_DECLARED_MESSAGE));
+            return;
+        }
+    }
+
     public GenericContext ParseBody()
     {
         bodyElements = SplitBody();
@@ -133,6 +204,7 @@ public class InstructionParser
         }
         else if (bodyElements.Contains(Keywords.CLASS))
         {
+            HandleClassChecks();
             contextToReturn = new GenericContext(MemberType.Class);
         }
         else if (bodyElements.Contains(Keywords.INTERFACE))
