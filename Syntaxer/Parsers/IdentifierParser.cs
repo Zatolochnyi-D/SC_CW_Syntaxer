@@ -366,29 +366,121 @@ public class IdentifierParser
         }
     }
 
-    private void HandleWhileChecks()
+    private MemberType IdentifyMethodType()
     {
-        foreach (var el in bodyElements)
-        {
-            Console.Write(el + "  ");
-        }
-        Console.WriteLine();
         MemberType locationType = parent.Parent.Context.MemberType;
-        MemberType[] allowedTypes = [MemberType.Method, MemberType.Constructor, MemberType.Forloop, MemberType.While, MemberType.If];
+        MemberType[] allowedTypes = [MemberType.Class];
         if (!allowedTypes.Contains(locationType))
         {
             // Class placed in the wrong location.
             exceptions.Add(new TypePlaceException(dimension.begin));
         }
 
-        if (bodyElements.IndexOf(Keywords.WHILE) != 1)
+        int indexOfDestructorSymbol = bodyElements.IndexOf("~");
+        if (indexOfDestructorSymbol != -1)
         {
-            // Keyword is not first.
-            exceptions.Add(new WhileDeclarationException(dimension.begin, WhileDeclarationException.NOT_FIRST));
+            // Its an destructor.
+            return MemberType.Destructor;
+        }
+
+        int indexOfOpenBracket = bodyElements.IndexOf("(");
+        List<string> body = bodyElements[..indexOfOpenBracket];
+        int amountOfWords = body.Where(x => !Keywords.ALL_KEYWORDS.Contains(x)).Count();
+        if (amountOfWords == 1)
+        {
+            // Constructor.
+            return MemberType.Constructor;
+        }
+        else if (amountOfWords == 2)
+        {
+            // Method.
+            return MemberType.Method;
+        }
+        else
+        {
+            // Cannot be identified.
+            return MemberType.Unknown;
         }
     }
 
-    private void HandleForChecks()
+    private void HandleDestructorChecks()
+    {
+        int indexOfOpenBracket = bodyElements.IndexOf("(");
+        List<string> body = bodyElements[..indexOfOpenBracket];
+        if (body.Any(Keywords.ALL_KEYWORDS.Contains))
+        {
+            // Destructor have modifiers but any allowed.
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.DESTRUCTOR_KEYWORD_FOUND));
+        }
+        int amountOfWords = body.Where(x => !Keywords.ALL_KEYWORDS.Contains(x)).Where(x => x != "~").Count();
+        if (amountOfWords == 0)
+        {
+            // There is no name.
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.NO_NAME_FOUND));
+        }
+        else if (amountOfWords > 1)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.TO_MANY_WORDS));
+        }
+
+        int indexOfLastBracket = bodyElements.IndexOf(")");
+        List<string> parameterContent = bodyElements[(indexOfOpenBracket + 1)..indexOfLastBracket];
+        if (parameterContent.Count != 0)
+        {
+            // There are some parameters, what is not allowed.
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.DESTRUCTOR_PARAMETERS_FOUND));
+        }
+    }
+
+    private void HandleConstructorChecks()
+    {
+        int indexOfOpenBracket = bodyElements.IndexOf("(");
+        List<string> body = bodyElements[..indexOfOpenBracket];
+
+        IEnumerable<string> keywords = body.Where(Keywords.ALL_KEYWORDS.Contains);
+        foreach (var word in keywords)
+        {
+            if (!Keywords.ACCESS_MODIFIERS.Contains(word))
+            {
+                // Not access modifier, not allowed.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(word)));
+            }
+        }
+
+        IEnumerable<string> correctModifiers = body.Where(x => Keywords.ACCESS_MODIFIERS.Contains(x));
+        IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
+        foreach (var duplicate in duplicates)
+        {
+            // There is some duplicates.
+            exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+        }
+
+        List<int> problematicKeywords = [];
+        bool startAdding = false;
+        for (int i = 0; i < body.Count; i++)
+        {
+            if (!Keywords.ALL_KEYWORDS.Contains(body[i]))
+            {
+                startAdding = true;
+            }
+            else if (startAdding)
+            {
+                problematicKeywords.Add(i);
+            }
+        }
+        if (problematicKeywords.Count != 0)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.MODIFIER_ORDER));
+        }
+
+        int indexOfLastBracket = bodyElements.IndexOf(")");
+        List<string> parameterContent = bodyElements[(indexOfOpenBracket + 1)..indexOfLastBracket];
+        var paramParser = new ParametersParser(dimension.begin, parameterContent);
+        paramParser.ParseBody();
+        exceptions.AddRange(paramParser.Exceptions);
+    }
+
+    private void HandleMethodChecks()
     {
 
     }
@@ -396,6 +488,14 @@ public class IdentifierParser
     public GenericContext ParseBody()
     {
         bodyElements = IdentifierSplitTools.SplitBody(cleanBody);
+
+        // Console.Write($"    {bodyElements.Count}  ");
+        // foreach (var el in bodyElements)
+        // {
+        //     Console.Write(el + "  ");
+        // }
+        // Console.WriteLine();
+
         GenericContext contextToReturn;
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
@@ -417,15 +517,22 @@ public class IdentifierParser
             HandleEnumChecks();
             contextToReturn = new GenericContext(MemberType.Enum);
         }
-        else if (bodyElements.Contains(Keywords.WHILE))
+        else if (bodyElements.Contains("(") && bodyElements.Contains(")"))
         {
-            HandleWhileChecks();
-            contextToReturn = new GenericContext(MemberType.While);
-        }
-        else if (bodyElements.Contains(Keywords.FOR))
-        {
-            HandleForChecks();
-            contextToReturn = new GenericContext(MemberType.Forloop);
+            MemberType type = IdentifyMethodType();
+            switch (type)
+            {
+                case MemberType.Destructor:
+                    HandleDestructorChecks();
+                    break;
+                case MemberType.Constructor:
+                    HandleConstructorChecks();
+                    break;
+                case MemberType.Method:
+                    HandleMethodChecks();
+                    break;
+            }
+            contextToReturn = new(type);
         }
         else
         {

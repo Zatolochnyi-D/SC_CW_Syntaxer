@@ -31,7 +31,6 @@ public static class Keywords
     public const string NEW = "new";
     public const string OUT = "out";
     public const string REF = "ref";
-    public const string PARAMS = "params";
     public const string READONLY = "readonly";
     public const string RETURN = "return";
     public const string THIS = "this";
@@ -61,10 +60,18 @@ public static class Keywords
         ABSTRACT,
         SEALED,
     ];
+
+    public static readonly string[] PARAMETER_KEYWORDS =
+    [
+        REF,
+        OUT,
+    ];
+
     public static readonly string[] ALL_KEYWORDS =
     [
         .. CLASS_MODIFIERS,
         .. TYPES,
+        .. PARAMETER_KEYWORDS,
         NAMESPACE,
         VIRTUAL,
         BASE,
@@ -77,7 +84,6 @@ public static class Keywords
         NEW,
         OUT,
         REF,
-        PARAMS,
         READONLY,
         RETURN,
         THIS,

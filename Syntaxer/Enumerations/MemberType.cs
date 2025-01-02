@@ -13,6 +13,7 @@ public enum MemberType
     EnumContent,
     Method,
     Constructor,
+    Destructor,
     Forloop,
     If,
     While
