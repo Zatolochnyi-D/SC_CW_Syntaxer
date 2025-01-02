@@ -177,12 +177,6 @@ public class Instruction : IMember
             exceptions.Add(new DelegateException(dimension.begin, DelegateException.MANY_NAMES_PROVIDED));
         }
 
-        Console.WriteLine(parameters.Count);
-        foreach ( var el in parameters)
-        {
-            Console.WriteLine(el);
-        }
-        Console.WriteLine();
         if (parameters.Count != 0)
         {
             var paramsParser = new ParametersParser(dimension.begin, parameters);

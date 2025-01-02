@@ -6,40 +6,75 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // IEnumerable<string> files = Directory.EnumerateFiles("/Users/denis/Desktop/SC_things_testing", "*.cs", SearchOption.AllDirectories);
-        // files = files.Where(x => !x.Contains("/obj/Debug/")).Where(x => !x.Contains("/bin/Debug/"));
-        // IEnumerable<string> fileContents = files.Select(File.ReadAllText);
-        // List<ScriptFile> scripts = fileContents.Select(x => new ScriptFile(x)).ToList();
-        List<string> filePathes =
-        [
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Strings.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Blocks.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Namespaces.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Classes.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Enums.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Interfaces.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Whiles.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Methods.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Usings.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Delegates.cs",
-            // "/Users/denis/Desktop/SC_things_testing/Testing/Signatures.cs",
-            // "/Users/denis/Desktop/SC_CW_Syntaxer/Syntaxer/Members/ScriptFile.cs"
-            "/Users/denis/Desktop/SC_things_testing/Testing/Tooltip.cs",
-            "/Users/denis/Desktop/SC_things_testing/Testing/GameOverUi.cs",
-            "/Users/denis/Desktop/SC_things_testing/Testing/CounterUic.cs",
-        ];
-
-        foreach (var path in filePathes)
+        string path;
+        bool useRecursion;
+        if (args.Length == 0)
         {
-            Console.WriteLine($"In file {path}:");
-            string data = File.ReadAllText(path);
-            ScriptFile file = new(data);
-            file.SplitContent();
-            foreach (var exception in file.ExceptionsAsStrings())
+            Console.WriteLine("No parameters provided.");
+            return;
+        }
+        else if (args.Length == 1)
+        {
+            // Only path provided.
+            path = args[0];
+            useRecursion = false;
+        }
+        else if (args.Length == 2)
+        {
+            path = args[1];
+            if (args[0] == "-r")
             {
-                Console.Write("  ");
-                Console.WriteLine(exception);
+                useRecursion = true;
             }
+            else
+            {
+                Console.WriteLine($"Unknown parameter {args[0]}.");
+                return;
+            }
+        }
+        else
+        {
+            Console.WriteLine("To many parameters provided. Enter correct amount of parameters.");
+            return;
+        }
+
+        FileAttributes attributes;
+        try
+        {
+            attributes = File.GetAttributes(path);
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine($"Target was not found. Ensure you entered correct path.");
+            return;
+        }
+
+        if (attributes.HasFlag(FileAttributes.Directory))
+        {
+            // It's an directory.
+            SearchOption searchOption = useRecursion ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            IEnumerable<string> files = Directory.EnumerateFiles(path, "*.cs", searchOption);
+            IEnumerable<string> fileContents = files.Select(File.ReadAllText);
+            foreach (var file in files.Zip(fileContents))
+            {
+                ScanFile(file.First, file.Second);
+            }
+        }
+        else
+        {
+            ScanFile(path, File.ReadAllText(path));
+        }
+    }
+
+    private static void ScanFile(string filePath, string fileContent)
+    {
+        Console.WriteLine($"In file {filePath}:");
+        ScriptFile file = new(fileContent);
+        file.SplitContent();
+        foreach (var exception in file.ExceptionsAsStrings())
+        {
+            Console.Write("  ");
+            Console.WriteLine(exception);
         }
     }
 }
