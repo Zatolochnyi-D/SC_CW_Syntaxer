@@ -36,7 +36,11 @@ public class ParametersParser
 
     private void HandleSimpleDeclaration(List<string> parameter)
     {
-        if (parameter.Count > 2)
+        if (parameter.Count < 2)
+        {
+            exceptions.Add(new ParameterException(start, ParameterException.NOT_ENOUGH_WORDS));
+        }
+        else if (parameter.Count > 2)
         {
             exceptions.Add(new ParameterException(start, ParameterException.TO_MANY_NAMES));
         }
