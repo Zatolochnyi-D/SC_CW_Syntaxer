@@ -15,4 +15,5 @@ public enum MemberType
     Constructor,
     Destructor,
     Using,
+    MethodSignature,
 }

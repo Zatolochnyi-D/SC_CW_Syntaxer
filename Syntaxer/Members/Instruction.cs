@@ -4,6 +4,7 @@ using Syntaxer.Enumerations;
 using Syntaxer.Exceptions;
 using Syntaxer.Operations;
 using Syntaxer.Parsers;
+using Syntaxer.Validators;
 
 namespace Syntaxer.Members;
 
@@ -18,7 +19,7 @@ public class Instruction : IMember
     private List<string> bodyElements = [];
     private (int begin, int end) dimension;
     private List<SyntaxException> exceptions = [];
-    private GenericContext context = new(Enumerations.MemberType.Unknown);
+    private GenericContext context = new(MemberType.Unknown);
 
     public ScriptFile ParentFile => parentFile;
     public IMember Parent => parent;
@@ -97,6 +98,103 @@ public class Instruction : IMember
         }
     }
 
+    private void HandleDelegateChecks()
+    {
+        MemberType locationType = parent.Parent.Context.MemberType;
+        MemberType[] allowedTypes = [MemberType.File, MemberType.Namespace, MemberType.Class, MemberType.Interface];
+        if (!allowedTypes.Contains(locationType))
+        {
+            // Placed in the wrong location.
+            exceptions.Add(new TypePlaceException(dimension.begin));
+        }
+
+        int indexOfClassKeyword = bodyElements.IndexOf(Keywords.DELEGATE);
+        if (indexOfClassKeyword - 1 != -1)
+        {
+            // There is something on left.
+            List<string> leftPart = bodyElements[..indexOfClassKeyword];
+            IEnumerable<string> wrongModifiers = leftPart.Where(x => !Keywords.ACCESS_MODIFIERS.Contains(x));
+            IEnumerable<string> nonModifiers = wrongModifiers.Where(x => !Keywords.ALL_KEYWORDS.Contains(x));
+            wrongModifiers = wrongModifiers.Except(nonModifiers);
+            foreach (var word in nonModifiers)
+            {
+                // Those words are not modifiers.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetNonModifierMessage(word)));
+            }
+            foreach (var modifier in wrongModifiers)
+            {
+                // There is some unrecognized words.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(modifier)));
+            }
+            IEnumerable<string> correctModifiers = leftPart.Where(x => !wrongModifiers.Contains(x));
+            IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
+            foreach (var duplicate in duplicates)
+            {
+                // There is some duplicates.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+            }
+        }
+
+        List<string> name = [];
+        List<string> parameters = [];
+        if (indexOfClassKeyword + 1 != bodyElements.Count)
+        {
+            // There is something on right.
+            List<string> rightPart;
+            rightPart = bodyElements[(indexOfClassKeyword + 1)..];
+            int openBracket = rightPart.IndexOf("(");
+            int closeBracket = rightPart.IndexOf(")");
+            if (openBracket == -1 || closeBracket == -1)
+            {
+                // Parameters brackets specified incorrectly.
+                exceptions.Add(new DelegateException(dimension.begin, DelegateException.BRACKETS_ERROR));
+                name = rightPart;
+            }
+            else
+            {
+                name = rightPart[..openBracket];
+                parameters = rightPart[(openBracket + 1)..closeBracket];
+            }
+        }
+
+        var nameValidator = new NameValidator(dimension.begin, [.. name]);
+        nameValidator.Validate();
+        exceptions.AddRange(nameValidator.Exceptions);
+
+        if (name.Count == 0)
+        {
+            // Name is empty.
+            exceptions.Add(new DelegateException(dimension.begin, DelegateException.NO_NAME_PROVIDED));
+        }
+        else if (name.Count == 1)
+        {
+            exceptions.Add(new DelegateException(dimension.begin, DelegateException.TYPE_NOT_FOUND));
+        }
+        else if (name.Count > 2)
+        {
+            // To many words.
+            exceptions.Add(new DelegateException(dimension.begin, DelegateException.MANY_NAMES_PROVIDED));
+        }
+
+        Console.WriteLine(parameters.Count);
+        foreach ( var el in parameters)
+        {
+            Console.WriteLine(el);
+        }
+        Console.WriteLine();
+        if (parameters.Count != 0)
+        {
+            var paramsParser = new ParametersParser(dimension.begin, parameters);
+            paramsParser.ParseBody();
+            exceptions.AddRange(paramsParser.Exceptions);
+        }
+    }
+
+    private MemberType IdentifyMember()
+    {
+        return MemberType.Unknown;
+    }
+
     public void SplitContent()
     {
         bodyElements = IdentifierSplitTools.SplitBody(new string(body.Where(x => !char.IsControl(x)).ToArray()));
@@ -107,7 +205,17 @@ public class Instruction : IMember
         }
         else if (bodyElements.Contains(Keywords.DELEGATE))
         {
-            Console.WriteLine("DELEGATE");
+            HandleDelegateChecks();
+            context = new GenericContext(MemberType.Delegate);
+        }
+        else if (bodyElements.Contains("(") && bodyElements.Contains(")"))
+        {
+            MemberType type = IdentifyMember();
+            if (type == MemberType.MethodSignature)
+            {
+
+            }
+            context = new GenericContext(type);
         }
     }
 

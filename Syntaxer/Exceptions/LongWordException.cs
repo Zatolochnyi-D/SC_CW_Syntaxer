@@ -2,7 +2,7 @@ namespace Syntaxer.Exceptions;
 
 public class LongWordException : SyntaxException
 {
-    private const string KEYWORD_USED_MESSAGE = "Keyword \"{0}\" was found in word.";
+    private const string KEYWORD_USED_MESSAGE = "Keyword \"{0}\" was found in name.";
     private const string INVALID_SYMBOLS_MESSAGE = "Name \"{0}\" does not contain any valid symbols.";
     public const string WORD_INCOMPLETE_MESSAGE = "One ore more words are missing in long word. Check on dots placement.";
 
