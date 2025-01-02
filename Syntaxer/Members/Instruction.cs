@@ -192,7 +192,16 @@ public class Instruction : IMember
 
     private MemberType IdentifyMember()
     {
+        if (parent.Context.MemberType == MemberType.Interface)
+        {
+            return MemberType.MethodSignature;
+        }
         return MemberType.Unknown;
+    }
+
+    private void HandleSignatureChecks()
+    {
+        
     }
 
     public void SplitContent()

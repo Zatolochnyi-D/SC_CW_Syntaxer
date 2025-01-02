@@ -482,7 +482,50 @@ public class IdentifierParser
 
     private void HandleMethodChecks()
     {
+        int indexOfOpenBracket = bodyElements.IndexOf("(");
+        List<string> body = bodyElements[..indexOfOpenBracket];
 
+        IEnumerable<string> keywords = body.Where(Keywords.ALL_KEYWORDS.Contains);
+        foreach (var word in keywords)
+        {
+            if (!Keywords.ACCESS_MODIFIERS.Contains(word))
+            {
+                // Not access modifier, not allowed.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(word)));
+            }
+        }
+
+        IEnumerable<string> correctModifiers = body.Where(x => Keywords.ACCESS_MODIFIERS.Contains(x));
+        IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
+        foreach (var duplicate in duplicates)
+        {
+            // There is some duplicates.
+            exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+        }
+
+        List<int> problematicKeywords = [];
+        bool startAdding = false;
+        for (int i = 0; i < body.Count; i++)
+        {
+            if (!Keywords.ALL_KEYWORDS.Contains(body[i]))
+            {
+                startAdding = true;
+            }
+            else if (startAdding)
+            {
+                problematicKeywords.Add(i);
+            }
+        }
+        if (problematicKeywords.Count != 0)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.MODIFIER_ORDER));
+        }
+
+        int indexOfLastBracket = bodyElements.IndexOf(")");
+        List<string> parameterContent = bodyElements[(indexOfOpenBracket + 1)..indexOfLastBracket];
+        var paramParser = new ParametersParser(dimension.begin, parameterContent);
+        paramParser.ParseBody();
+        exceptions.AddRange(paramParser.Exceptions);
     }
 
     public GenericContext ParseBody()

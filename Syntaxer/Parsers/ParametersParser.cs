@@ -19,6 +19,7 @@ public class ParametersParser
 
     private void SplitBody()
     {
+        if (body.Count == 0) return;
         List<string> parameter = [];
         foreach (var el in body)
         {
