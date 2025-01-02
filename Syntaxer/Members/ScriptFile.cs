@@ -63,6 +63,25 @@ public class ScriptFile : IMember
         return result;
     }
 
+    public bool IsOnTop(Instruction instruction)
+    {
+        int indexOfInstruction = members.IndexOf(instruction);
+        if (indexOfInstruction == -1)
+        {
+            // Not in file, somewhere deeper in blocks.
+            return false;
+        }
+        for (int i = indexOfInstruction - 1; i >= 0; i--)
+        {
+            if (members[i].Context.MemberType != MemberType.Using)
+            {
+                // Console.WriteLine(false);
+                return false;
+            }
+        }
+        return true;
+    }
+
     public List<string> ExceptionsAsStrings()
     {
         List<string> result = [];
@@ -89,7 +108,7 @@ public class ScriptFile : IMember
             }
         }
 
-        return (line, column);
+        return (line + 1, column + 1);
     }
 
     public override string ToString()

@@ -14,7 +14,5 @@ public enum MemberType
     Method,
     Constructor,
     Destructor,
-    Forloop,
-    If,
-    While
+    Using,
 }

@@ -19,7 +19,8 @@ public class Program
             // "/Users/denis/Desktop/SC_things_testing/Testing/Enums.cs",
             // "/Users/denis/Desktop/SC_things_testing/Testing/Interfaces.cs",
             // "/Users/denis/Desktop/SC_things_testing/Testing/Whiles.cs",
-            "/Users/denis/Desktop/SC_things_testing/Testing/Methods.cs",
+            // "/Users/denis/Desktop/SC_things_testing/Testing/Methods.cs",
+            "/Users/denis/Desktop/SC_things_testing/Testing/Usings.cs",
             // "/Users/denis/Desktop/SC_CW_Syntaxer/Syntaxer/Members/ScriptFile.cs"
         ];
 
