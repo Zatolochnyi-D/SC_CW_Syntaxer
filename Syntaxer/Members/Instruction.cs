@@ -1,4 +1,5 @@
 
+using System.Security.Cryptography;
 using Syntaxer.Context;
 using Syntaxer.Enumerations;
 using Syntaxer.Exceptions;
@@ -201,7 +202,80 @@ public class Instruction : IMember
 
     private void HandleSignatureChecks()
     {
+        int indexOfOpenBracket = bodyElements.IndexOf("(");
+        List<string> body = bodyElements[..indexOfOpenBracket];
+
+        IEnumerable<string> keywords = body.Where(Keywords.ALL_KEYWORDS.Contains);
+        foreach (var word in keywords)
+        {
+            if (!Keywords.ACCESS_MODIFIERS.Contains(word))
+            {
+                // Not access modifier, not allowed.
+                exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetWrongContextMessage(word)));
+            }
+        }
+
+        IEnumerable<string> correctModifiers = body.Where(x => Keywords.ACCESS_MODIFIERS.Contains(x));
+        IEnumerable<string> duplicates = correctModifiers.GroupBy(x => x).Where(group => group.Count() != 1).Select(x => x.Key).Distinct();
+        foreach (var duplicate in duplicates)
+        {
+            // There is some duplicates.
+            exceptions.Add(new ModifierException(dimension.begin, ModifierException.GetDuplicateWordMessage(duplicate)));
+        }
+
+        List<int> problematicKeywords = [];
+        bool startAdding = false;
+        int lastModifierIndex = -1;
+        for (int i = 0; i < body.Count; i++)
+        {
+            if (!Keywords.ALL_KEYWORDS.Contains(body[i]))
+            {
+                startAdding = true;
+            }
+            else if (startAdding)
+            {
+                problematicKeywords.Add(i);
+            }
+            
+            if (Keywords.ACCESS_MODIFIERS.Contains(body[i]))
+            {
+                lastModifierIndex = i;
+            }
+        }
         
+        if (problematicKeywords.Count != 0)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.MODIFIER_ORDER));
+        }
+
+        
+        List<string> words;
+        if (lastModifierIndex == -1)
+        {
+            words = body[..indexOfOpenBracket];
+        }
+        else
+        {
+            words = body[(lastModifierIndex + 1)..indexOfOpenBracket];
+        }
+        if (words.Count == 0)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.NO_NAME_FOUND));
+        }
+        else if (words.Count == 1)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.NOT_ENOUGH_WORDS));
+        }
+        else if (words.Count > 2)
+        {
+            exceptions.Add(new MethodDeclarationException(dimension.begin, MethodDeclarationException.TO_MANY_WORDS));
+        }
+
+        int indexOfLastBracket = bodyElements.IndexOf(")");
+        List<string> parameterContent = bodyElements[(indexOfOpenBracket + 1)..indexOfLastBracket];
+        var paramParser = new ParametersParser(dimension.begin, parameterContent);
+        paramParser.ParseBody();
+        exceptions.AddRange(paramParser.Exceptions);
     }
 
     public void SplitContent()
@@ -222,9 +296,13 @@ public class Instruction : IMember
             MemberType type = IdentifyMember();
             if (type == MemberType.MethodSignature)
             {
-
+                HandleSignatureChecks();
             }
             context = new GenericContext(type);
+        }
+        if (context.MemberType == MemberType.Unknown)
+        {
+            exceptions.Add(new UnknownInstructionException(dimension.begin));
         }
     }
 

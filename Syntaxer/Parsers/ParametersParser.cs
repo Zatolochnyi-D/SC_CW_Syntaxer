@@ -50,7 +50,11 @@ public class ParametersParser
         {
             exceptions.Add(new ParameterException(start, ParameterException.REF_OUT_NOT_FIRST));
         }
-        if (parameter.Count > 3)
+        if (parameter.Count < 3)
+        {
+            exceptions.Add(new ParameterException(start, ParameterException.NOT_ENOUGH_WORDS));
+        }
+        else if (parameter.Count > 3)
         {
             exceptions.Add(new ParameterException(start, ParameterException.TO_MANY_NAMES));
         }

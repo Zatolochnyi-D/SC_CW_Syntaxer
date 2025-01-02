@@ -7,6 +7,7 @@ public class ParameterException : SyntaxException
     public const string REF_OUT_NOT_FIRST = "\"ref\" or \"out\" are not first.";
     public const string MISSING_PARAMETER = "\",\" was found but no parameter after.";
     public const string OPERATOR_FOUND = "Operator was found what is not allowed";
+    public const string NOT_ENOUGH_WORDS = "Type or name of parameter is missing.";
 
     public ParameterException(int index, string message) : base(index, message) { }
 }
