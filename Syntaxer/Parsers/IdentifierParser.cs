@@ -532,13 +532,6 @@ public class IdentifierParser
     {
         bodyElements = IdentifierSplitTools.SplitBody(cleanBody);
 
-        // Console.Write($"    {bodyElements.Count}  ");
-        // foreach (var el in bodyElements)
-        // {
-        //     Console.Write(el + "  ");
-        // }
-        // Console.WriteLine();
-
         GenericContext contextToReturn;
         if (bodyElements.Contains(Keywords.NAMESPACE))
         {
