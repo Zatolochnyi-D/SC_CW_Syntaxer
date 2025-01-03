@@ -10,6 +10,4 @@ public class MethodDeclarationException : SyntaxException
     public const string NOT_ENOUGH_WORDS = "Type or name of method is missing.";
 
     public MethodDeclarationException(int index, string message) : base(index, message) { }
-
-    // public static string GetKeywordAsNameMessage(string keyword) => string.Format(KEYWORD_AS_NAME_MESSAGE, keyword);
 }
